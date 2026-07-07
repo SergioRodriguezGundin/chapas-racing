@@ -19,7 +19,7 @@
         "Se exporta el circuito activo cargado y validado (p.ej. getCurrentTrack()) como único punto de acceso",
         "pnpm tsc --noEmit limpio"
       ],
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "id": 2,
