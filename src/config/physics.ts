@@ -35,6 +35,9 @@ export const STOP_DETECTION = {
   framesRequired: 30,
 } as const;
 
+/** Altura Y bajo la cual la chapa se considera fuera de pista -> reset. */
+export const OUT_OF_TRACK_Y = -3;
+
 export const TRACK = {
   /** Altura Y del centro de la geometría de suelo (segmentos y pads) */
   groundY: 0,

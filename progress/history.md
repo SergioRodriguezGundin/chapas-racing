@@ -32,3 +32,10 @@
 - Nuevo `src/features/track/FinishLine.tsx`: `RigidBody fixed colliders={false}` + `CuboidCollider sensor` en `finishTransform` (half-extents `[finish.width/2, alto/2, prof/2]`), visual semitransparente. `onIntersectionEnter` -> guard `status==='playing'` (getState) + `win()`; guard extra por `userData.type==='cap'` (añadido `userData` a Cap.tsx). Montado en GameCanvas dentro de `<Physics>`. Constantes en `config/physics.ts`.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación visual/física (cruzar meta -> won; no re-dispara) pendiente-de-humano.
 - Artefactos: `progress/impl_finish_line.md`, `progress/review_finish_line.md` (APPROVED).
+
+### Feature 6 — cap_reset_teleport (done)
+- Modo harness (leader → implementer → reviewer).
+- `config/physics.ts`: `OUT_OF_TRACK_Y = -3`.
+- `Cap.tsx`: helper `teleport(body, [x,y,z])` compartido (setTranslation y+0.2, linvel/angvel 0, rotación identidad). Camino fuera-de-pista en useFrame FUERA del guard de phase -> teleport a `lastPosition` + `settle()`. Camino restart: comparación de `resetRequestId` con ref `lastResetId` (inicializado con valor del store, sin teleport espurio, sin refs cruzadas DOM<->Canvas) -> teleport a `getCurrentTrack().capStart`. Detección de parada por velocidad intacta para 'moving'.
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación física real pendiente-de-humano.
+- Artefactos: `progress/impl_cap_reset_teleport.md`, `progress/review_cap_reset_teleport.md` (APPROVED).

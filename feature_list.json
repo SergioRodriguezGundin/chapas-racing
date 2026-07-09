@@ -101,7 +101,7 @@
         "Verificación manual: lanzar la chapa fuera del borde -> cae, reaparece quieta en el punto del último lanzamiento y phase queda 'idle'",
         "pnpm tsc --noEmit limpio"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 7,
