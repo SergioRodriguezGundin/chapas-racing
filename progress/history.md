@@ -17,3 +17,11 @@
 - Semántica de phase intacta.
 - Verificación: `pnpm tsc --noEmit` limpio; `pnpm build` limpio.
 - Artefactos: `progress/impl_store_status_restart.md`, `progress/review_store_status_restart.md` (APPROVED).
+
+### Feature 4 — track_renderer (done)
+- Modo harness (leader → implementer → reviewer).
+- Nuevo `src/features/track/TrackRenderer.tsx`: UN `RigidBody fixed colliders={false}` con `CuboidCollider`+`boxGeometry` por segmento (ejes: length→X, trackWidth→Z, coherente con `rotationY=atan2(-dz,dx)`) y `CylinderCollider`+`cylinderGeometry` por pad. Usa `useTrackGeometry(getCurrentTrack())`.
+- `GameCanvas.tsx`: `<Ground />` → `<TrackRenderer />` dentro de `<Physics>`.
+- `Ground.tsx` eliminado (git: D). `Cap.tsx` toma position de `getCurrentTrack().capStart`. `CAP_START_POSITION` eliminada de config (0 referencias vivas; grosor de suelo en `config/physics.ts`).
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación visual en pantalla queda pendiente-de-humano (leader no la ejecuta).
+- Artefactos: `progress/impl_track_renderer.md`, `progress/review_track_renderer.md` (APPROVED).

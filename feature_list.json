@@ -69,7 +69,7 @@
         "Verificación manual: el trazado de circuit-01 se ve en pantalla y la chapa cae sobre el primer tramo y se puede lanzar",
         "pnpm tsc --noEmit y pnpm build limpios"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 5,

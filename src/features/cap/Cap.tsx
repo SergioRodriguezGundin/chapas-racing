@@ -5,8 +5,9 @@ import { useFrame } from "@react-three/fiber";
 import { CylinderCollider, RigidBody, type RapierRigidBody } from "@react-three/rapier";
 import { useLaunch } from "@/features/launch/useLaunch";
 import { AimIndicator } from "@/features/launch/AimIndicator";
+import { getCurrentTrack } from "@/features/track/track.types";
 import { useGameStore } from "@/stores/gameStore";
-import { CAP_START_POSITION, PHYSICS, STOP_DETECTION } from "@/config/physics";
+import { PHYSICS, STOP_DETECTION } from "@/config/physics";
 
 /**
  * Chapa: cilindro plano sin modelado (iter 1).
@@ -18,6 +19,7 @@ export function Cap() {
   const bodyRef = useRef<RapierRigidBody>(null);
   const stillFrames = useRef(0);
   const { onPointerDown } = useLaunch(bodyRef);
+  const { capStart } = getCurrentTrack();
 
   useFrame(() => {
     if (useGameStore.getState().phase !== "moving") return;
@@ -42,7 +44,7 @@ export function Cap() {
     <>
       <RigidBody
         ref={bodyRef}
-        position={CAP_START_POSITION}
+        position={capStart}
         colliders={false}
         linearDamping={PHYSICS.linearDamping}
         angularDamping={PHYSICS.angularDamping}

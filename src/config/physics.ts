@@ -35,9 +35,9 @@ export const STOP_DETECTION = {
   framesRequired: 30,
 } as const;
 
-export const CAP_START_POSITION: [number, number, number] = [0, 0.3, 0];
-
 export const TRACK = {
   /** Altura Y del centro de la geometría de suelo (segmentos y pads) */
   groundY: 0,
+  /** Grosor (alto Y) del suelo del trazado: segmentos y pads */
+  floorThickness: 0.1,
 } as const;

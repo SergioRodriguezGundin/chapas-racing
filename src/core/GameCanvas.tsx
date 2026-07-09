@@ -5,7 +5,7 @@ import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { OrbitControls } from "@react-three/drei";
 import { Cap } from "@/features/cap/Cap";
-import { Ground } from "@/features/track/Ground";
+import { TrackRenderer } from "@/features/track/TrackRenderer";
 import { useGameStore } from "@/stores/gameStore";
 
 /**
@@ -32,7 +32,7 @@ export function GameCanvas() {
 
       <Suspense fallback={null}>
         <Physics>
-          <Ground />
+          <TrackRenderer />
           <Cap />
         </Physics>
       </Suspense>
