@@ -52,7 +52,7 @@
         "La semántica de phase (idle -> aiming -> moving) no cambia",
         "pnpm tsc --noEmit limpio"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 4,
