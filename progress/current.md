@@ -1,10 +1,15 @@
-# Sesión actual
+# Estado actual
 
-Tarea en curso: feature 5 `finish_line` (iteración 2)
+Tarea en curso: (ninguna)
+
+Última cerrada: feature 5 — finish_line (done). Ver `progress/history.md`.
+
+Pendiente-de-humano acumulado (no bloquea tsc/build):
+- Render del circuito (feature 4) visible y chapa lanzable.
+- Cruzar la meta cambia status a 'won'; con 'won' no re-dispara (feature 5).
+Conviene comprobar en `pnpm dev` antes de cerrar la iteración.
+
+Siguiente elegible: feature 6 — cap_reset_teleport (depende de 3; satisfecha). Luego 7 (depende 3,6) y 8 (verificación integral).
 
 Plan:
-- Añadir constantes de meta a `TRACK` en `config/physics.ts` (alto sensor, profundidad, opacidad).
-- Crear `src/features/track/FinishLine.tsx`: RigidBody fixed + CuboidCollider sensor en `finishTransform`, ancho `finish.width` en eje X, guard de status + userData, visual semitransparente.
-- Añadir `userData={{ type: "cap" }}` al RigidBody de la chapa (`Cap.tsx`) como red de seguridad del guard.
-- Montar `<FinishLine />` en `GameCanvas.tsx` dentro de `<Physics>`.
-- Verificar `pnpm tsc --noEmit` y `pnpm build`.
+-

@@ -85,7 +85,7 @@
         "Verificación manual: cruzar la meta con la chapa cambia status a 'won'; tocarla con status 'won' no re-dispara",
         "pnpm tsc --noEmit limpio"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 6,

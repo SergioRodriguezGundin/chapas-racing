@@ -25,3 +25,10 @@
 - `Ground.tsx` eliminado (git: D). `Cap.tsx` toma position de `getCurrentTrack().capStart`. `CAP_START_POSITION` eliminada de config (0 referencias vivas; grosor de suelo en `config/physics.ts`).
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación visual en pantalla queda pendiente-de-humano (leader no la ejecuta).
 - Artefactos: `progress/impl_track_renderer.md`, `progress/review_track_renderer.md` (APPROVED).
+
+### Feature 5 — finish_line (done)
+- Modo harness (leader → explorer → implementer → reviewer).
+- Explorer: fijada API de sensores @react-three/rapier 2.2.0 (`sensor` en CuboidCollider, `onIntersectionEnter(payload)`, usar `payload.other.*` no deprecados; sensor y chapa bajo el mismo `<Physics>`; gotcha de re-disparo tras teleport). -> `progress/research_rapier_sensors.md`.
+- Nuevo `src/features/track/FinishLine.tsx`: `RigidBody fixed colliders={false}` + `CuboidCollider sensor` en `finishTransform` (half-extents `[finish.width/2, alto/2, prof/2]`), visual semitransparente. `onIntersectionEnter` -> guard `status==='playing'` (getState) + `win()`; guard extra por `userData.type==='cap'` (añadido `userData` a Cap.tsx). Montado en GameCanvas dentro de `<Physics>`. Constantes en `config/physics.ts`.
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación visual/física (cruzar meta -> won; no re-dispara) pendiente-de-humano.
+- Artefactos: `progress/impl_finish_line.md`, `progress/review_finish_line.md` (APPROVED).
