@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Hud } from "@/ui/Hud";
+import { VictoryModal } from "@/ui/VictoryModal";
 
 // Canvas + Rapier (WASM) = client-only. SSR desactivado.
 const GameCanvas = dynamic(
@@ -14,6 +15,7 @@ export default function Home() {
     <main className="game-root">
       <GameCanvas />
       <Hud />
+      <VictoryModal />
     </main>
   );
 }

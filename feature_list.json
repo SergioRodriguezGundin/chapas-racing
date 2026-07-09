@@ -116,7 +116,7 @@
         "Montado junto al Hud existente en src/app/page.tsx",
         "pnpm tsc --noEmit limpio"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 8,

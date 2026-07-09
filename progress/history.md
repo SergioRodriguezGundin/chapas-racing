@@ -39,3 +39,10 @@
 - `Cap.tsx`: helper `teleport(body, [x,y,z])` compartido (setTranslation y+0.2, linvel/angvel 0, rotación identidad). Camino fuera-de-pista en useFrame FUERA del guard de phase -> teleport a `lastPosition` + `settle()`. Camino restart: comparación de `resetRequestId` con ref `lastResetId` (inicializado con valor del store, sin teleport espurio, sin refs cruzadas DOM<->Canvas) -> teleport a `getCurrentTrack().capStart`. Detección de parada por velocidad intacta para 'moving'.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación física real pendiente-de-humano.
 - Artefactos: `progress/impl_cap_reset_teleport.md`, `progress/review_cap_reset_teleport.md` (APPROVED).
+
+### Feature 7 — victory_modal (done)
+- Modo harness (leader → implementer → reviewer).
+- Nuevo `src/ui/VictoryModal.tsx`: overlay DOM cliente que suscribe `status` (return null salvo `status==='won'`), mensaje de victoria + botón "Jugar de nuevo" que llama a `store.restart()` (delega; no duplica teleport/estado). Clases `.victory-*` en `globals.css` con `pointer-events:auto`. Montado junto al `<Hud />` en `page.tsx`.
+- Con modal abierto no se puede lanzar (guard de startAiming por status, feature 3). Reset via restart repone estado (feature 3) y teleporta (feature 6).
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Interacción visual pendiente-de-humano.
+- Artefactos: `progress/impl_victory_modal.md`, `progress/review_victory_modal.md` (APPROVED).
