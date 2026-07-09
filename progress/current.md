@@ -1,15 +1,10 @@
-# Estado actual
+# Sesión actual
 
-Tarea en curso: (ninguna)
-
-Última cerrada: feature 4 — track_renderer (done). Ver `progress/history.md`.
-
-Pendiente-de-humano: verificación visual (el trazado de circuit-01 se ve y la chapa cae/lanza). No bloquea el cierre de tsc/build pero conviene comprobar en `pnpm dev`.
-
-Siguiente elegible:
-- feature 5 — finish_line (depende de 2, 3; satisfechas)
-- feature 6 — cap_reset_teleport (depende de 3; satisfecha)
-Elegir UNA (orden sugerido: 5).
+Tarea en curso: feature 5 `finish_line` (iteración 2)
 
 Plan:
--
+- Añadir constantes de meta a `TRACK` en `config/physics.ts` (alto sensor, profundidad, opacidad).
+- Crear `src/features/track/FinishLine.tsx`: RigidBody fixed + CuboidCollider sensor en `finishTransform`, ancho `finish.width` en eje X, guard de status + userData, visual semitransparente.
+- Añadir `userData={{ type: "cap" }}` al RigidBody de la chapa (`Cap.tsx`) como red de seguridad del guard.
+- Montar `<FinishLine />` en `GameCanvas.tsx` dentro de `<Physics>`.
+- Verificar `pnpm tsc --noEmit` y `pnpm build`.

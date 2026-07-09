@@ -40,4 +40,10 @@ export const TRACK = {
   groundY: 0,
   /** Grosor (alto Y) del suelo del trazado: segmentos y pads */
   floorThickness: 0.1,
+  /** Alto (Y) del volumen de la meta: alto para que la chapa lo cruce con holgura */
+  finishHeight: 1,
+  /** Profundidad (a lo largo del avance) del volumen de la meta */
+  finishDepth: 0.3,
+  /** Opacidad del mesh semitransparente de la meta */
+  finishOpacity: 0.4,
 } as const;

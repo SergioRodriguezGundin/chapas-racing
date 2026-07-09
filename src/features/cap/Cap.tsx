@@ -45,6 +45,7 @@ export function Cap() {
       <RigidBody
         ref={bodyRef}
         position={capStart}
+        userData={{ type: "cap" }}
         colliders={false}
         linearDamping={PHYSICS.linearDamping}
         angularDamping={PHYSICS.angularDamping}
