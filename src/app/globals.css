@@ -60,3 +60,56 @@ body {
   border-radius: 999px;
   transition: width 40ms linear;
 }
+
+.victory-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(13 20 24 / 72%);
+  backdrop-filter: blur(4px);
+  pointer-events: auto; /* a diferencia del .hud: el botón debe ser clicable */
+  user-select: none;
+}
+
+.victory-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 40px;
+  border-radius: 16px;
+  background: #1b262c;
+  border: 1px solid rgb(45 212 167 / 40%);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 45%);
+}
+
+.victory-title {
+  font-size: 2rem;
+  color: #2dd4a7;
+  letter-spacing: 0.02em;
+}
+
+.victory-subtitle {
+  font-size: 0.95rem;
+  color: #e8eef1;
+  opacity: 0.8;
+}
+
+.victory-btn {
+  margin-top: 8px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #1b262c;
+  background: #2dd4a7;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.victory-btn:hover {
+  background: #3ee9bb;
+  transform: translateY(-1px);
+}
