@@ -36,3 +36,8 @@ export const STOP_DETECTION = {
 } as const;
 
 export const CAP_START_POSITION: [number, number, number] = [0, 0.3, 0];
+
+export const TRACK = {
+  /** Altura Y del centro de la geometría de suelo (segmentos y pads) */
+  groundY: 0,
+} as const;
