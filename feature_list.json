@@ -1,0 +1,139 @@
+{
+  "project": "chapas-racing",
+  "description": "Iteración 2: circuito data-driven (JSON), reset fuera de pista y línea de meta con modal de victoria. Spec: specs/iteration-2-spec.md.",
+  "rules": {
+    "one_feature_at_a_time": true,
+    "require_typecheck_and_build_to_close": true,
+    "valid_status": ["pending", "in_progress", "done", "blocked"]
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "track_types_and_data",
+      "title": "Tipos y datos del circuito",
+      "description": "Definir TrackDefinition con validación runtime ligera y crear circuit-01.json con los datos de la spec. Punto único de acceso al circuito activo para store y componentes.",
+      "acceptance": [
+        "Existe src/features/track/track.types.ts con el tipo TrackDefinition: name, trackWidth, capStart [x,y,z], waypoints [x,z][], finish { waypointIndex, width }",
+        "Función de validación que lanza Error si waypoints.length < 2, trackWidth <= 0 o finish.waypointIndex fuera de rango de waypoints",
+        "Existe src/features/track/tracks/circuit-01.json con los datos exactos de la sección 'Formato de circuito' de la spec",
+        "Se exporta el circuito activo cargado y validado (p.ej. getCurrentTrack()) como único punto de acceso",
+        "pnpm tsc --noEmit limpio"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "name": "track_geometry",
+      "title": "Cálculo de geometría waypoints -> segmentos/pads/meta",
+      "description": "Función pura computeTrackGeometry(track) que convierte la polilínea de waypoints en transformaciones de colliders: segmentos entre pares consecutivos, pads cilíndricos por waypoint y transform de la meta. Hook useTrackGeometry envuelve con useMemo. Depende de: 1.",
+      "acceptance": [
+        "Existe src/features/track/useTrackGeometry.ts con función pura computeTrackGeometry(track) y hook useTrackGeometry(track) con useMemo",
+        "Devuelve segments: { position, rotationY, length }[] — por par consecutivo (A,B): centrado en el punto medio, largo |B-A|, rotación atan2 según dirección",
+        "Devuelve pads: position[] — una por waypoint",
+        "Devuelve finishTransform: { position, rotationY } — perpendicular al último tramo, centrada en el waypoint finish.waypointIndex",
+        "Para circuit-01: segments.length === waypoints.length - 1 y pads.length === waypoints.length",
+        "Sin acceso a stores ni efectos: función pura verificable por inspección",
+        "pnpm tsc --noEmit limpio"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 3,
+      "name": "store_status_restart",
+      "title": "Estados de partida en gameStore: status, win, restart",
+      "description": "Añadir el estado de partida (playing/won) y las acciones win/restart al store, con resetRequestId para desacoplar el teleport del DOM. Depende de: 1.",
+      "acceptance": [
+        "src/stores/gameStore.ts exporta type GameStatus = 'playing' | 'won' y el estado incluye status con valor inicial 'playing'",
+        "win() pone status = 'won'",
+        "restart() restaura el estado inicial completo: phase 'idle', status 'playing', aim a cero, lastPosition = capStart del circuito activo",
+        "restart() incrementa resetRequestId: number (inicial 0), expuesto en el estado",
+        "startAiming no hace nada si status !== 'playing'",
+        "lastPosition inicial se lee del capStart del circuito activo (getCurrentTrack()), ya no de CAP_START_POSITION",
+        "La semántica de phase (idle -> aiming -> moving) no cambia",
+        "pnpm tsc --noEmit limpio"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 4,
+      "name": "track_renderer",
+      "title": "TrackRenderer: render y colliders del circuito, retirada de Ground",
+      "description": "Componente que renderiza el suelo únicamente bajo el trazado usando la geometría calculada, dentro de un solo RigidBody fixed con colliders explícitos. Sustituye a Ground en la escena. Depende de: 1, 2.",
+      "acceptance": [
+        "Existe src/features/track/TrackRenderer.tsx con UN solo RigidBody type=\"fixed\" colliders={false}",
+        "Por segmento: CuboidCollider + boxGeometry de largo length, ancho trackWidth, alto 0.1, en su position/rotationY",
+        "Por pad: CylinderCollider + cylinderGeometry de radio trackWidth/2 y alto 0.1",
+        "GameCanvas.tsx monta <TrackRenderer /> dentro de <Physics> en lugar de <Ground />",
+        "src/features/track/Ground.tsx eliminado del repo",
+        "Cap.tsx toma su position inicial de track.capStart; CAP_START_POSITION eliminada de config/physics.ts sin referencias restantes",
+        "Verificación manual: el trazado de circuit-01 se ve en pantalla y la chapa cae sobre el primer tramo y se puede lanzar",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 5,
+      "name": "finish_line",
+      "title": "FinishLine: sensor de meta",
+      "description": "Sensor perpendicular al último tramo que dispara win() al cruzarlo la chapa, con visual distintivo. Depende de: 2, 3.",
+      "acceptance": [
+        "Existe src/features/track/FinishLine.tsx: RigidBody type=\"fixed\" + CuboidCollider sensor en finishTransform, ancho finish.width, alto ~1, profundidad ~0.3",
+        "onIntersectionEnter llama a win() solo si status === 'playing' (guard con getState())",
+        "Visual: mesh semitransparente de color/patrón distintivo en la posición del sensor",
+        "Montado en GameCanvas dentro de <Physics> (requisito rapier: sensor y chapa bajo el mismo <Physics>)",
+        "Dimensiones nuevas como constantes en config/physics.ts, no inline",
+        "Verificación manual: cruzar la meta con la chapa cambia status a 'won'; tocarla con status 'won' no re-dispara",
+        "pnpm tsc --noEmit limpio"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 6,
+      "name": "cap_reset_teleport",
+      "title": "Reset de la chapa: fuera de pista y por restart",
+      "description": "Detección de caída fuera del trazado en useFrame con teleport a lastPosition, y teleport a capStart cuando restart() incrementa resetRequestId. Helper de teleport compartido. Depende de: 3.",
+      "acceptance": [
+        "OUT_OF_TRACK_Y = -3 definida en config/physics.ts",
+        "En Cap.tsx, dentro de useFrame: si body.translation().y < OUT_OF_TRACK_Y -> setTranslation a lastPosition con y + 0.2, setLinvel y setAngvel a cero, setRotation identidad, settle()",
+        "Cap observa cambios de resetRequestId y ejecuta el mismo teleport hacia track.capStart (sin refs cruzadas DOM <-> Canvas)",
+        "Ambos caminos comparten un helper de teleport (posición como parámetro)",
+        "Patrón iter 1 respetado: lógica imperativa con getState() en useFrame, sin suscripciones que causen re-render por frame",
+        "Verificación manual: lanzar la chapa fuera del borde -> cae, reaparece quieta en el punto del último lanzamiento y phase queda 'idle'",
+        "pnpm tsc --noEmit limpio"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 7,
+      "name": "victory_modal",
+      "title": "Modal de victoria",
+      "description": "Overlay DOM fuera del Canvas visible al ganar, con botón para reiniciar la partida vía restart(). Depende de: 3, 6.",
+      "acceptance": [
+        "Existe src/ui/VictoryModal.tsx: overlay DOM (fuera del Canvas) que solo se muestra si status === 'won'",
+        "Muestra mensaje de victoria y botón 'Jugar de nuevo' que llama a store.restart()",
+        "Tras restart: la chapa aparece en capStart (vía resetRequestId de la tarea 6), status = 'playing' y se puede volver a lanzar",
+        "Con el modal abierto no se puede lanzar (startAiming bloqueado por status, tarea 3)",
+        "Montado junto al Hud existente en src/app/page.tsx",
+        "pnpm tsc --noEmit limpio"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 8,
+      "name": "iteration_2_verification",
+      "title": "Verificación integral de la iteración 2",
+      "description": "Recorrido completo de los criterios de aceptación y el plan de verificación manual de la spec. Depende de: 1-7.",
+      "acceptance": [
+        "Criterio 1: el circuito se renderiza desde circuit-01.json; editar waypoints en el JSON cambia el trazado sin tocar código",
+        "Criterio 2: chapa lanzada fuera del trazado cae y reaparece en la posición del último lanzamiento, quieta, phase = 'idle'",
+        "Criterio 3: cruzar la meta abre el modal de victoria y no se puede lanzar con el modal abierto",
+        "Criterio 4: 'Jugar de nuevo' deja la chapa en capStart, status = 'playing' y se puede lanzar",
+        "Criterio 5: el reset restaura a la posición desde donde se LANZÓ (lastPosition de iter 1), no donde se detuvo",
+        "Manual: editar trackWidth a 6 en el JSON ensancha la pista al recargar",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Sin dependencias nuevas en package.json"
+      ],
+      "status": "pending"
+    }
+  ]
+}
