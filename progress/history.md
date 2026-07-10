@@ -46,3 +46,17 @@
 - Con modal abierto no se puede lanzar (guard de startAiming por status, feature 3). Reset via restart repone estado (feature 3) y teleporta (feature 6).
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Interacción visual pendiente-de-humano.
 - Artefactos: `progress/impl_victory_modal.md`, `progress/review_victory_modal.md` (APPROVED).
+
+## Infra — shadcn/ui preset (feature/spec-3)
+
+### Design system — preset b311U8NYiG (done)
+- Modo ligero (implementación directa, sin harness).
+- Problema inicial: `pnpm dlx shadcn apply --preset b311U8NYiG` fallaba sin `components.json` (comando `apply` solo válido tras `init`).
+- Prerequisito manual: Tailwind CSS v4 (`tailwindcss`, `@tailwindcss/postcss`, `postcss`) + `postcss.config.mjs` antes de que el CLI aceptara el init.
+- `pnpm dlx shadcn@latest init --preset b311U8NYiG --template next`: preset **base-vega**, baseColor **mist**, theme **yellow**, fuentes **Noto Sans / Outfit** (via `next/font` en `layout.tsx`).
+- Nuevos archivos: `components.json`, `src/lib/utils.ts`, `src/components/ui/{button,dialog,progress}.tsx`.
+- `src/app/globals.css`: variables del preset shadcn + estilos del juego (HUD, canvas, overlay dialog) conservados al final del archivo para no perder layout del juego.
+- Migración UI: `VictoryModal` → `Dialog` + `Button`; `Hud` → `Progress` (gradiente rojo→verde de potencia preservado).
+- Excepción a regla de deps cerradas (`docs/architecture.md`): aprobada explícitamente por el usuario para shadcn/Tailwind/@base-ui/lucide.
+- Verificación: `pnpm tsc --noEmit` limpio; `pnpm build` limpio; smoke test dev OK tras limpiar `.next`.
+- Commit: `ee858fb` — *Initialize shadcn preset and migrate game UI overlays.* (push `origin/feature/spec-3`).
