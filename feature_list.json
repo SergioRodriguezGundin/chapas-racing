@@ -133,7 +133,7 @@
         "pnpm tsc --noEmit y pnpm build limpios",
         "Sin dependencias nuevas en package.json"
       ],
-      "status": "pending"
+      "status": "done"
     }
   ]
 }
