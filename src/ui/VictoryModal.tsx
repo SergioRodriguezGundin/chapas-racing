@@ -21,18 +21,18 @@ export function VictoryModal() {
     <Dialog open={open}>
       <DialogContent
         showCloseButton={false}
-        className="border-[rgb(45_212_167/40%)] bg-[#1b262c] text-center sm:max-w-sm"
+        className="border-border bg-popover text-center sm:max-w-sm"
       >
         <DialogHeader className="items-center text-center">
-          <DialogTitle className="font-heading text-2xl text-[#2dd4a7]">
+          <DialogTitle className="font-heading text-2xl text-primary">
             ¡Meta!
           </DialogTitle>
-          <DialogDescription className="text-[#e8eef1]/80">
+          <DialogDescription>
             Has cruzado la línea de meta.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-center">
-          <Button type="button" className="rounded-full px-6" onClick={restart}>
+          <Button type="button" onClick={restart}>
             Jugar de nuevo
           </Button>
         </DialogFooter>

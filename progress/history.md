@@ -60,3 +60,13 @@
 - Excepción a regla de deps cerradas (`docs/architecture.md`): aprobada explícitamente por el usuario para shadcn/Tailwind/@base-ui/lucide.
 - Verificación: `pnpm tsc --noEmit` limpio; `pnpm build` limpio; smoke test dev OK tras limpiar `.next`.
 - Commit: `ee858fb` — *Initialize shadcn preset and migrate game UI overlays.* (push `origin/feature/spec-3`).
+
+### Design system — shadcn CSS cleanup (done)
+- Modo harness (leader → implementer → reviewer).
+- Eliminado bloque CSS custom del juego en `globals.css` (`.game-root`, `.loading`, `.hud`, `.hud-phase`, override dialog overlay). Solo queda preset shadcn/tailwind.
+- Layout fullscreen migrado a Tailwind: `layout.tsx` (`h-full overflow-hidden`), `page.tsx` (`fixed inset-0`, loading con `text-muted-foreground`).
+- `Hud.tsx`: `Badge` variant secondary + `Progress` con gradiente `var(--destructive)`→`var(--primary)` (sin hex).
+- `VictoryModal.tsx`: tokens preset (`bg-popover`, `text-primary`, `border-border`, Button default).
+- Nuevo `src/components/ui/badge.tsx` (shadcn add, sin deps npm nuevas).
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Visual pendiente-de-humano.
+- Artefactos: `progress/impl_shadcn_css_cleanup.md`, `progress/review_shadcn_css_cleanup.md` (APPROVED).

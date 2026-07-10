@@ -16,8 +16,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={cn("font-sans", notoSans.variable, outfitHeading.variable)}>
-      <body>{children}</body>
+    <html
+      lang="es"
+      className={cn(
+        "h-full overflow-hidden font-sans",
+        notoSans.variable,
+        outfitHeading.variable,
+      )}
+    >
+      <body className="h-full overflow-hidden">{children}</body>
     </html>
   );
 }
