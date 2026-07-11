@@ -23,11 +23,13 @@ const GROUND_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
  */
 export function useLaunch(
   bodyRef: React.RefObject<RapierRigidBody | null>,
+  playerIndex: number,
 ) {
   const { camera, gl } = useThree();
   const raycaster = useRef(new THREE.Raycaster());
   const dragOrigin = useRef(new THREE.Vector3());
   const phase = useGameStore((s) => s.phase);
+  const activePlayerIndex = useGameStore((s) => s.activePlayerIndex);
 
   /** Proyecta coords de pantalla al plano del suelo. null si el rayo no corta. */
   const pointToGround = useCallback(
@@ -49,29 +51,28 @@ export function useLaunch(
   /** Handler para el mesh de la chapa (evento R3F) */
   const onPointerDown = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
-      if (useGameStore.getState().phase !== "idle") return;
+      const state = useGameStore.getState();
+      if (state.status !== "playing") return;
+      if (state.phase !== "idle") return;
+      if (state.activePlayerIndex !== playerIndex) return;
       const body = bodyRef.current;
       if (!body) return;
       e.stopPropagation();
 
-      // Origen del drag = posición actual de la chapa proyectada al suelo.
-      // Más estable que el punto exacto de click.
       const t = body.translation();
       dragOrigin.current.set(t.x, 0, t.z);
-      useGameStore.getState().startAiming();
+      state.startAiming();
     },
-    [bodyRef],
+    [bodyRef, playerIndex],
   );
 
-  // Mientras aiming: listeners globales de move/up
   useEffect(() => {
-    if (phase !== "aiming") return;
+    if (phase !== "aiming" || playerIndex !== activePlayerIndex) return;
 
     const handleMove = (e: PointerEvent) => {
       const hit = pointToGround(e.clientX, e.clientY);
       if (!hit) return;
 
-      // Arrastras hacia atrás -> la chapa sale hacia delante
       const drag = new THREE.Vector3().subVectors(dragOrigin.current, hit);
       drag.y = 0;
 
@@ -86,17 +87,15 @@ export function useLaunch(
       const { aim, cancelAim, launch } = useGameStore.getState();
       const body = bodyRef.current;
 
-      // Drag corto o vuelta al origen -> cancela tiro
       if (!body || aim.power < LAUNCH.minLaunchPower) {
         cancelAim();
         return;
       }
 
       const t = body.translation();
-      launch([t.x, t.y, t.z]); // snapshot pre-lanzamiento (regla fuera-pista iter 2)
+      launch([t.x, t.y, t.z]);
 
       body.wakeUp();
-      // Impulso 100% horizontal: la chapa desliza, no vuela
       body.applyImpulse(
         {
           x: aim.direction[0] * aim.power * LAUNCH.maxImpulse,
@@ -115,7 +114,7 @@ export function useLaunch(
       window.removeEventListener("pointerup", handleUp);
       window.removeEventListener("pointercancel", handleUp);
     };
-  }, [phase, pointToGround, bodyRef]);
+  }, [phase, activePlayerIndex, playerIndex, pointToGround, bodyRef]);
 
   return { onPointerDown };
 }

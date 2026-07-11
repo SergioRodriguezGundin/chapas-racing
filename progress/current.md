@@ -1,8 +1,15 @@
 # Estado actual
 
-Tarea en curso: (ninguna)
+## Bugs F01 — cerrados
 
-Última cerrada: shadcn CSS cleanup (done). Ver `progress/history.md`.
+| ID | Status |
+|----|--------|
+| BUG-01 | done |
+| BUG-02 | done |
+| BUG-03 | done (verificado manual) |
 
-Plan:
--
+F02/F03 desbloqueados.
+
+## Siguiente tarea
+
+Consultar `specs/feature_list.md` o `feature_list.json` para la siguiente feature.

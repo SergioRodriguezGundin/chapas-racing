@@ -1,18 +1,27 @@
 import { create } from "zustand";
 
+import { computeStartPositions } from "@/features/track/startPositions";
 import { getCurrentTrack } from "@/features/track/track.types";
 
 /**
  * Máquina de estados del turno.
  * idle -> aiming -> moving -> idle
- * Base del sistema de turnos multijugador (iter futura).
  */
 export type GamePhase = "idle" | "aiming" | "moving";
 
-/** Estado global de partida: en juego o ganada. */
-export type GameStatus = "playing" | "won";
+/** Ciclo de vida de la partida multijugador. */
+export type MatchStatus = "setup" | "playing" | "finished";
 
 export type Vec3 = [number, number, number];
+
+export interface Player {
+  id: string;
+  name: string;
+  color: string;
+  strokes: number;
+  lastPosition: Vec3;
+  startPosition: Vec3;
+}
 
 interface AimState {
   /** Dirección de disparo, unitaria, plano XZ */
@@ -25,49 +34,119 @@ const AIM_ZERO: AimState = { direction: [0, 0, -1], power: 0 };
 
 interface GameState {
   phase: GamePhase;
-  status: GameStatus;
+  status: MatchStatus;
+  players: Player[];
+  activePlayerIndex: number;
+  winnerIndex: number | null;
   aim: AimState;
-  /**
-   * Snapshot de posición pre-lanzamiento.
-   * Iter 2: si la chapa sale del circuito -> restaurar aquí.
-   */
-  lastPosition: Vec3;
   /** Contador que desacopla el teleport de reset del DOM: Cap observa su cambio. */
   resetRequestId: number;
 
   startAiming: () => void;
   updateAim: (direction: Vec3, power: number) => void;
   cancelAim: () => void;
-  /** Registra snapshot y pasa a moving. El impulso lo aplica la capa física. */
+  /** Registra snapshot del jugador activo y pasa a moving. El impulso lo aplica la capa física. */
   launch: (from: Vec3) => void;
-  /** Chapa parada -> vuelve a idle. Iter futura: aquí rota el turno. */
+  /** Chapa activa parada -> idle y rota turno. */
   settle: () => void;
-  /** Chapa cruza la meta -> partida ganada. */
-  win: () => void;
-  /** Reinicia la partida al estado inicial completo y solicita teleport de la chapa. */
+  /** Primera chapa en cruzar la meta -> partida terminada. */
+  playerFinished: (playerIndex: number) => void;
+  /** Reinicia con los mismos jugadores (strokes y posiciones a salida). */
   restart: () => void;
+  /** Vuelve a setup para reconfigurar jugadores (F01-B/C). */
+  newMatch: () => void;
+  /** Inicia partida con la configuración elegida (F01-B). */
+  startMatch: (configs: Array<{ name: string; color: string }>) => void;
 }
 
 export const useGameStore = create<GameState>((set) => ({
   phase: "idle",
-  status: "playing",
+  status: "setup",
+  players: [],
+  activePlayerIndex: 0,
+  winnerIndex: null,
   aim: AIM_ZERO,
-  lastPosition: getCurrentTrack().capStart,
   resetRequestId: 0,
 
   startAiming: () =>
     set((s) => (s.status !== "playing" ? {} : { phase: "aiming", aim: AIM_ZERO })),
   updateAim: (direction, power) => set({ aim: { direction, power } }),
   cancelAim: () => set({ phase: "idle", aim: AIM_ZERO }),
-  launch: (from) => set({ phase: "moving", lastPosition: from, aim: AIM_ZERO }),
-  settle: () => set({ phase: "idle" }),
-  win: () => set({ status: "won" }),
+  launch: (from) =>
+    set((s) => {
+      if (s.status !== "playing") return {};
+      const idx = s.activePlayerIndex;
+      return {
+        phase: "moving",
+        aim: AIM_ZERO,
+        players: s.players.map((p, i) =>
+          i === idx
+            ? { ...p, lastPosition: from, strokes: p.strokes + 1 }
+            : p,
+        ),
+      };
+    }),
+  settle: () =>
+    set((s) => {
+      if (s.status !== "playing") return {};
+      const n = s.players.length;
+      if (n === 0) return { phase: "idle" };
+      return {
+        phase: "idle",
+        activePlayerIndex: (s.activePlayerIndex + 1) % n,
+      };
+    }),
+  playerFinished: (playerIndex) =>
+    set((s) => {
+      if (s.status !== "playing") return {};
+      return {
+        status: "finished",
+        winnerIndex: playerIndex,
+        phase: "idle",
+      };
+    }),
   restart: () =>
     set((s) => ({
       phase: "idle",
       status: "playing",
+      winnerIndex: null,
       aim: AIM_ZERO,
-      lastPosition: getCurrentTrack().capStart,
+      activePlayerIndex: 0,
+      players: s.players.map((p) => ({
+        ...p,
+        strokes: 0,
+        lastPosition: p.startPosition,
+      })),
       resetRequestId: s.resetRequestId + 1,
     })),
+  newMatch: () =>
+    set({
+      phase: "idle",
+      status: "setup",
+      players: [],
+      activePlayerIndex: 0,
+      winnerIndex: null,
+      aim: AIM_ZERO,
+    }),
+  startMatch: (configs) => {
+    const track = getCurrentTrack();
+    const positions = computeStartPositions(track, configs.length);
+    const players: Player[] = configs.map((cfg, i) => ({
+      id: `player-${i}`,
+      name: cfg.name,
+      color: cfg.color,
+      strokes: 0,
+      lastPosition: positions[i],
+      startPosition: positions[i],
+    }));
+    set({
+      phase: "idle",
+      status: "playing",
+      players,
+      activePlayerIndex: 0,
+      winnerIndex: null,
+      aim: AIM_ZERO,
+      resetRequestId: 0,
+    });
+  },
 }));

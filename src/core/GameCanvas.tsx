@@ -15,6 +15,8 @@ import { useGameStore } from "@/stores/gameStore";
  */
 export function GameCanvas() {
   const phase = useGameStore((s) => s.phase);
+  const players = useGameStore((s) => s.players);
+  const resetRequestId = useGameStore((s) => s.resetRequestId);
 
   return (
     <Canvas
@@ -35,7 +37,9 @@ export function GameCanvas() {
         <Physics>
           <TrackRenderer />
           <FinishLine />
-          <Cap />
+          {players.map((player, i) => (
+            <Cap key={`${player.id}-${resetRequestId}`} playerIndex={i} />
+          ))}
         </Physics>
       </Suspense>
 

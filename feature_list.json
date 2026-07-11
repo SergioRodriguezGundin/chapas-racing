@@ -8,6 +8,53 @@
   },
   "features": [
     {
+      "id": "BUG-01",
+      "name": "f01_bug_aim_misalignment_after_turn",
+      "title": "[BUG F01] Apuntado desalineado tras el primer turno",
+      "description": "Tras el primer lanzamiento de user1, el click/drag del siguiente jugador no coincide con la posición que marca el indicador de apuntado. Probable causa: useLaunch registra listeners window en TODAS las instancias Cap cuando phase=aiming (cada una con dragOrigin propio).",
+      "priority": 1,
+      "blocks": ["F02", "F03"],
+      "acceptance": [
+        "Tras settle() del jugador 1, el jugador 2 puede apuntar: el drag coincide con AimIndicator y la dirección del impulso",
+        "Tras varios turnos alternados, el apuntado sigue alineado en cada turno",
+        "Solo la chapa del jugador activo registra listeners de pointermove/pointerup durante aiming",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "BUG-02",
+      "name": "f01_bug_impulse_wrong_cap",
+      "title": "[BUG F01] Impulso aplicado a la chapa incorrecta",
+      "description": "Cuando el turno pasa a user2, el movimiento del lanzamiento se aplica a la chapa de user1. Probable causa: múltiples handleUp en useLaunch (una por Cap) aplican applyImpulse a distintos bodyRef.",
+      "priority": 2,
+      "blocks": ["F02", "F03"],
+      "depends_on": ["BUG-01"],
+      "acceptance": [
+        "Con turno en user2, pointerup aplica impulso SOLO al RigidBody de user2",
+        "Con turno en user1, pointerup aplica impulso SOLO al RigidBody de user1",
+        "Verificación manual con 2+ jugadores: cada lanzamiento mueve únicamente la chapa activa",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "BUG-03",
+      "name": "f01_bug_restart_caps_not_reset",
+      "title": "[BUG F01] Jugar de nuevo no resetea posición de las chapas",
+      "description": "Al pulsar 'Jugar de nuevo' en VictoryModal, restart() actualiza el store (strokes, lastPosition, resetRequestId) pero las chapas visuales/físicas permanecen donde terminaron la partida anterior. En multijugador, ninguna o solo algunas chapas vuelven a startPosition.",
+      "priority": 1,
+      "blocks": ["F02", "F03"],
+      "acceptance": [
+        "Tras cruzar meta y pulsar 'Jugar de nuevo', TODAS las chapas reaparecen en su startPosition",
+        "Velocidades y rotación a cero; phase idle; activePlayerIndex 0; strokes reseteados",
+        "Se puede lanzar de nuevo inmediatamente desde la línea de salida",
+        "Funciona con 2–4 jugadores",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
       "id": 1,
       "name": "track_types_and_data",
       "title": "Tipos y datos del circuito",

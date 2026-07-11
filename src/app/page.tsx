@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+
+import { useGameStore } from "@/stores/gameStore";
 import { Hud } from "@/ui/Hud";
+import { SetupScreen } from "@/ui/SetupScreen";
 import { VictoryModal } from "@/ui/VictoryModal";
 
 // Canvas + Rapier (WASM) = client-only. SSR desactivado.
@@ -18,10 +21,13 @@ const GameCanvas = dynamic(
 );
 
 export default function Home() {
+  const status = useGameStore((s) => s.status);
+
   return (
     <main className="fixed inset-0">
       <GameCanvas />
-      <Hud />
+      {status !== "setup" && <Hud />}
+      <SetupScreen />
       <VictoryModal />
     </main>
   );
