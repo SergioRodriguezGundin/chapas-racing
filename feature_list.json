@@ -199,8 +199,7 @@
         "Cero imports Supabase en src/app/page.tsx ni src/core/",
         "pnpm tsc --noEmit y pnpm build limpios"
       ],
-      "status": "blocked",
-      "blocked_reason": "Requiere aprobación de deps nuevas y proyecto Supabase (URL + anon key)"
+      "status": "done"
     },
     {
       "id": "F02-B",
@@ -217,7 +216,7 @@
         "Usuario no logueado puede jugar hot-seat completo en /",
         "pnpm tsc --noEmit y pnpm build limpios"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "F02-C",
@@ -234,7 +233,7 @@
         "Verificación: nuevo signup tiene fila profiles; anon no puede update ajeno",
         "cap_color default hex válido (#3b82f6 o similar)"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "F02-E",
@@ -251,7 +250,7 @@
         "Tras login, param next devuelve a ruta original",
         "pnpm tsc --noEmit y pnpm build limpios"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "F02-D",
@@ -269,7 +268,7 @@
         "Sesión persiste entre recargas (cookies PKCE)",
         "pnpm tsc --noEmit y pnpm build limpios"
       ],
-      "status": "pending"
+      "status": "done"
     }
   ],
   "suggested_order": ["F02-A", "F02-B", "F02-C", "F02-E", "F02-D"],

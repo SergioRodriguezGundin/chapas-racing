@@ -70,3 +70,15 @@
 - Nuevo `src/components/ui/badge.tsx` (shadcn add, sin deps npm nuevas).
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Visual pendiente-de-humano.
 - Artefactos: `progress/impl_shadcn_css_cleanup.md`, `progress/review_shadcn_css_cleanup.md` (APPROVED).
+
+## F02 — Auth / Perfil Supabase (done)
+
+- Modo harness (leader → implementers en paralelo B∥C → E → D → reviewers).
+- **F02-A** Cliente Supabase: `@supabase/supabase-js`, `@supabase/ssr`, factories browser/server/middleware, middleware mínimo sin `/`.
+- **F02-B** Login UI: `/login`, `LoginForm`, email/password + Google OAuth, callback PKCE.
+- **F02-C** Migración `profiles` + RLS + bucket `avatars` + trigger signup; tipos regenerados.
+- **F02-E** Protección rutas: `/online`, `/editor`, `/profile` protegidas; hot-seat `/` público.
+- **F02-D** Editor perfil: display_name, cap_color, avatar upload, logout, link en HUD.
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios en cada sub-tarea.
+- Artefactos: `progress/impl_F02-*.md`, `progress/review_F02-*.md` (todos APPROVED).
+- Manual pendiente: Google OAuth en Dashboard, signup + RLS cross-user en local.

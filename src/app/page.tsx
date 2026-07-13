@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 import { useGameStore } from "@/stores/gameStore";
+import { AuthNav } from "@/ui/AuthNav";
 import { Hud } from "@/ui/Hud";
 import { SetupScreen } from "@/ui/SetupScreen";
 import { VictoryModal } from "@/ui/VictoryModal";
@@ -25,6 +26,7 @@ export default function Home() {
 
   return (
     <main className="fixed inset-0">
+      <AuthNav />
       <GameCanvas />
       {status !== "setup" && <Hud />}
       <SetupScreen />

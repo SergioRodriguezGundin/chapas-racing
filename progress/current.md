@@ -1,31 +1,25 @@
 # Estado actual
 
-## Completado
+## Fix Google OAuth — UX + docs ✅
 
-- Iteración 2 (features 1–8): `done`
-- F01 hot-seat (A/B/C): APPROVED
-- BUG-01/02/03: `done`
+**Error:** `missing OAuth secret` — causa: Supabase Dashboard sin Client Secret de Google.  
+**Harness:** research → implement → review APPROVED.
 
-## Planificación F02 (sesión actual)
+### Fix real (manual — usuario)
 
-Investigación: `progress/research_supabase_auth.md`
+1. [Google Cloud](https://console.cloud.google.com/) → OAuth client Web → redirect URI:
+   `https://tiwagdlcxnzfjnncqsrf.supabase.co/auth/v1/callback`
+2. [Supabase → Google provider](https://supabase.com/dashboard/project/tiwagdlcxnzfjnncqsrf/auth/providers?provider=Google) → Client ID + **Client Secret** → Save
+3. Auth → URL Configuration → `http://localhost:3000/auth/callback` en Redirect URLs
 
-F02 descompuesto en `feature_list.json`:
+Guía completa: `docs/setup-google-oauth.md` o `/docs/setup-google-oauth`
 
-| ID | Nombre | Status | Depende de |
-|----|--------|--------|------------|
-| F02-A | supabase_client_setup | **blocked** | aprobación deps + proyecto Supabase |
-| F02-B | auth_login_ui | pending | F02-A |
-| F02-C | profiles_migration_rls | pending | F02-A |
-| F02-E | route_protection | pending | F02-A, F02-B |
-| F02-D | profile_editor_ui | pending | F02-B, F02-C, F02-E |
+### Artefactos
 
-**Orden sugerido:** A → (B ∥ C) → E → D
+- `progress/research_google_oauth_secret_error.md`
+- `progress/impl_google_oauth_secret_fix.md`
+- `progress/review_google_oauth_secret_fix.md` (APPROVED)
 
-## Siguiente acción
+## Siguiente
 
-1. Aprobar deps `@supabase/supabase-js` + `@supabase/ssr`
-2. Crear/configurar proyecto Supabase (URL, anon key, Google OAuth)
-3. Desbloquear F02-A → arrancar harness (implementer + reviewer)
-
-**Sin implementación iniciada** (instrucción usuario).
+Tras configurar Dashboard, probar Google login y continuar con F03 u otra tarea.
