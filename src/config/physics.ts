@@ -19,6 +19,26 @@ export const PHYSICS = {
   restitution: 0.1,
 } as const;
 
+/** Límites de jugadores por partida (hot-seat). */
+export const MATCH = {
+  minPlayers: 2,
+  maxPlayers: 4,
+} as const;
+
+/** Separación (m) entre chapas en la parrilla de salida (~capRadius * 2.4). */
+export const CAP_START_SPACING = PHYSICS.capRadius * 2.4;
+
+/**
+ * Paleta de colores por defecto para las chapas.
+ * El primero (#e63946) mantiene la continuidad con la chapa mono-jugador.
+ */
+export const PLAYER_COLORS: readonly string[] = [
+  "#e63946", // rojo
+  "#457b9d", // azul
+  "#f4a261", // naranja
+  "#2a9d8f", // verde azulado
+] as const;
+
 export const LAUNCH = {
   /** Distancia máx de arrastre en unidades mundo -> potencia 1.0 */
   maxDragDistance: 4,

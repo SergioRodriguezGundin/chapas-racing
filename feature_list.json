@@ -1,12 +1,59 @@
 {
   "project": "chapas-racing",
-  "description": "Iteración 2: circuito data-driven (JSON), reset fuera de pista y línea de meta con modal de victoria. Spec: specs/iteration-2-spec.md.",
+  "description": "Post-iteración 2 + F01 hot-seat. Siguiente: F02 auth/perfil (Supabase). Spec: specs/feature_list.md. Investigación: progress/research_supabase_auth.md.",
   "rules": {
     "one_feature_at_a_time": true,
     "require_typecheck_and_build_to_close": true,
     "valid_status": ["pending", "in_progress", "done", "blocked"]
   },
   "features": [
+    {
+      "id": "BUG-01",
+      "name": "f01_bug_aim_misalignment_after_turn",
+      "title": "[BUG F01] Apuntado desalineado tras el primer turno",
+      "description": "Tras el primer lanzamiento de user1, el click/drag del siguiente jugador no coincide con la posición que marca el indicador de apuntado. Probable causa: useLaunch registra listeners window en TODAS las instancias Cap cuando phase=aiming (cada una con dragOrigin propio).",
+      "priority": 1,
+      "blocks": ["F02", "F03"],
+      "acceptance": [
+        "Tras settle() del jugador 1, el jugador 2 puede apuntar: el drag coincide con AimIndicator y la dirección del impulso",
+        "Tras varios turnos alternados, el apuntado sigue alineado en cada turno",
+        "Solo la chapa del jugador activo registra listeners de pointermove/pointerup durante aiming",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "BUG-02",
+      "name": "f01_bug_impulse_wrong_cap",
+      "title": "[BUG F01] Impulso aplicado a la chapa incorrecta",
+      "description": "Cuando el turno pasa a user2, el movimiento del lanzamiento se aplica a la chapa de user1. Probable causa: múltiples handleUp en useLaunch (una por Cap) aplican applyImpulse a distintos bodyRef.",
+      "priority": 2,
+      "blocks": ["F02", "F03"],
+      "depends_on": ["BUG-01"],
+      "acceptance": [
+        "Con turno en user2, pointerup aplica impulso SOLO al RigidBody de user2",
+        "Con turno en user1, pointerup aplica impulso SOLO al RigidBody de user1",
+        "Verificación manual con 2+ jugadores: cada lanzamiento mueve únicamente la chapa activa",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "BUG-03",
+      "name": "f01_bug_restart_caps_not_reset",
+      "title": "[BUG F01] Jugar de nuevo no resetea posición de las chapas",
+      "description": "Al pulsar 'Jugar de nuevo' en VictoryModal, restart() actualiza el store (strokes, lastPosition, resetRequestId) pero las chapas visuales/físicas permanecen donde terminaron la partida anterior. En multijugador, ninguna o solo algunas chapas vuelven a startPosition.",
+      "priority": 1,
+      "blocks": ["F02", "F03"],
+      "acceptance": [
+        "Tras cruzar meta y pulsar 'Jugar de nuevo', TODAS las chapas reaparecen en su startPosition",
+        "Velocidades y rotación a cero; phase idle; activePlayerIndex 0; strokes reseteados",
+        "Se puede lanzar de nuevo inmediatamente desde la línea de salida",
+        "Funciona con 2–4 jugadores",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
     {
       "id": 1,
       "name": "track_types_and_data",
@@ -134,6 +181,102 @@
         "Sin dependencias nuevas en package.json"
       ],
       "status": "done"
+    },
+    {
+      "id": "F02-A",
+      "name": "supabase_client_setup",
+      "title": "F02-A — Cliente Supabase + env + tipos",
+      "description": "Infraestructura auth: dependencias @supabase/supabase-js y @supabase/ssr, variables de entorno documentadas, tres factories (browser/server/middleware), middleware raíz con matcher que NO incluye / (hot-seat). Sin imports Supabase en page.tsx ni core/.",
+      "depends_on": [],
+      "blocks": ["F02-B", "F02-C", "F03"],
+      "new_dependencies": ["@supabase/supabase-js", "@supabase/ssr"],
+      "acceptance": [
+        "pnpm add @supabase/supabase-js @supabase/ssr (tras aprobación explícita)",
+        "Existe .env.local.example con NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY documentados",
+        "Existe src/lib/supabase/client.ts (createBrowserClient), server.ts (createServerClient + cookies async), middleware.ts (updateSession con getAll/setAll)",
+        "Existe middleware.ts raíz: refresh sesión solo en rutas auth/login; matcher NO incluye /",
+        "Existe src/types/supabase.ts (placeholder o generado desde proyecto Supabase)",
+        "Cero imports Supabase en src/app/page.tsx ni src/core/",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F02-B",
+      "name": "auth_login_ui",
+      "title": "F02-B — UI login (email/password + Google OAuth)",
+      "description": "Pantalla de login y flujo OAuth PKCE: LoginForm, signInWithPassword/signUp, signInWithOAuth Google, callback route exchangeCodeForSession, página auth-code-error. Hot-seat en / sigue accesible sin login.",
+      "depends_on": ["F02-A"],
+      "acceptance": [
+        "Existe src/app/login/page.tsx y src/ui/LoginForm.tsx",
+        "Email/password: signInWithPassword y signUp con mensajes de error en español",
+        "Google OAuth: signInWithOAuth con redirectTo /auth/callback; Dashboard configurado (provider + redirect URLs)",
+        "Existe src/app/auth/callback/route.ts (exchangeCodeForSession) y auth/auth-code-error/page.tsx",
+        "Tras OAuth exitoso redirige a / o query param next",
+        "Usuario no logueado puede jugar hot-seat completo en /",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F02-C",
+      "name": "profiles_migration_rls",
+      "title": "F02-C — Migración profiles + RLS + Storage avatars",
+      "description": "Esquema Postgres: tabla public.profiles (display_name, cap_color, avatar_url), RLS (select público, insert/update solo propio), trigger handle_new_user en auth.users, bucket Storage avatars con políticas. Regenerar tipos TypeScript.",
+      "depends_on": ["F02-A"],
+      "acceptance": [
+        "Existe supabase/migrations/ con SQL: tabla profiles, constraints, RLS enabled, políticas select/insert/update",
+        "Trigger on_auth_user_created crea fila profiles con display_name desde metadata Google/email",
+        "Bucket avatars con políticas: lectura pública, upload/update solo carpeta {userId}/",
+        "Migración aplicada en proyecto Supabase",
+        "src/types/supabase.ts regenerado con tipos de profiles",
+        "Verificación: nuevo signup tiene fila profiles; anon no puede update ajeno",
+        "cap_color default hex válido (#3b82f6 o similar)"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F02-E",
+      "name": "route_protection",
+      "title": "F02-E — Protección de rutas (online/editores/perfil)",
+      "description": "Middleware completo con PROTECTED_PREFIXES (/online, /editor, /profile), redirect a /login?next=, layout (protected) con guard server, stubs online/editor para validar guards. Hot-seat / permanece público.",
+      "depends_on": ["F02-A", "F02-B"],
+      "acceptance": [
+        "middleware.ts: isProtected redirige a /login?next=pathname si !user",
+        "Usuario logueado en /login redirige a /",
+        "Existe src/app/(protected)/layout.tsx con getUser() + redirect",
+        "Stubs src/app/(protected)/online/page.tsx y editor/page.tsx (próximamente)",
+        "Verificación manual: / hot-seat jugable sin sesión; /online, /editor, /profile redirigen sin sesión",
+        "Tras login, param next devuelve a ruta original",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F02-D",
+      "name": "profile_editor_ui",
+      "title": "F02-D — UI perfil editable",
+      "description": "Página /profile protegida: formulario display_name, cap_color (picker), avatar opcional (upload Storage). Persistencia vía update profiles con RLS. Link desde login/HUD cuando hay sesión.",
+      "depends_on": ["F02-B", "F02-C", "F02-E"],
+      "acceptance": [
+        "Existe src/app/profile/page.tsx accesible solo autenticado",
+        "Form edita display_name (1-32 chars), cap_color (#RRGGBB), avatar opcional",
+        "Upload avatar a Storage avatars/{userId}/ y actualiza profiles.avatar_url",
+        "Edición persiste; updated_at cambia en DB",
+        "UI coherente con convenciones src/ui/ y tokens shadcn",
+        "Logout limpia sesión y redirige a /",
+        "Sesión persiste entre recargas (cookies PKCE)",
+        "pnpm tsc --noEmit y pnpm build limpios"
+      ],
+      "status": "done"
     }
-  ]
+  ],
+  "suggested_order": ["F02-A", "F02-B", "F02-C", "F02-E", "F02-D"],
+  "dependency_graph": {
+    "F02-A": { "blocks": ["F02-B", "F02-C", "F03"] },
+    "F02-B": { "depends_on": ["F02-A"], "blocks": ["F02-E", "F02-D"] },
+    "F02-C": { "depends_on": ["F02-A"], "blocks": ["F02-D"] },
+    "F02-E": { "depends_on": ["F02-A", "F02-B"], "blocks": ["F02-D"] },
+    "F02-D": { "depends_on": ["F02-B", "F02-C", "F02-E"], "completes": "F02" }
+  }
 }
