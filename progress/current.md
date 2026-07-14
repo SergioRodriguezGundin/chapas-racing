@@ -1,19 +1,25 @@
 # Estado actual
 
-Tarea en curso: (ninguna)
+## Fix Google OAuth — UX + docs ✅
 
-Última cerrada: feature 7 — victory_modal (done). Ver `progress/history.md`.
+**Error:** `missing OAuth secret` — causa: Supabase Dashboard sin Client Secret de Google.  
+**Harness:** research → implement → review APPROVED.
 
-Progreso iteración 2: features 1–7 done (7/8). Queda la 8 (verificación integral).
+### Fix real (manual — usuario)
 
-Pendiente-de-humano acumulado (BLOQUEA la feature 8, que es verificación manual integral):
-- Render del circuito visible y chapa lanzable (feature 4).
-- Cruzar meta -> status 'won'; no re-dispara (feature 5).
-- Lanzar fuera del borde -> cae y reaparece quieta en lastPosition, phase 'idle' (feature 6).
-- Modal de victoria aparece al ganar; "Jugar de nuevo" resetea; no se puede lanzar con modal abierto (feature 7).
-- Editar trackWidth/waypoints en circuit-01.json cambia el trazado (feature 8, criterio data-driven).
+1. [Google Cloud](https://console.cloud.google.com/) → OAuth client Web → redirect URI:
+   `https://tiwagdlcxnzfjnncqsrf.supabase.co/auth/v1/callback`
+2. [Supabase → Google provider](https://supabase.com/dashboard/project/tiwagdlcxnzfjnncqsrf/auth/providers?provider=Google) → Client ID + **Client Secret** → Save
+3. Auth → URL Configuration → `http://localhost:3000/auth/callback` en Redirect URLs
 
-Siguiente: feature 8 — iteration_2_verification. Es un recorrido de verificación MANUAL (requiere `pnpm dev` y ojos humanos); el leader/agentes no pueden validarla sola. Recomendado: sesión de verificación manual con el usuario.
+Guía completa: `docs/setup-google-oauth.md` o `/docs/setup-google-oauth`
 
-Plan:
--
+### Artefactos
+
+- `progress/research_google_oauth_secret_error.md`
+- `progress/impl_google_oauth_secret_fix.md`
+- `progress/review_google_oauth_secret_fix.md` (APPROVED)
+
+## Siguiente
+
+Tras configurar Dashboard, probar Google login y continuar con F03 u otra tarea.

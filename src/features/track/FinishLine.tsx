@@ -9,7 +9,7 @@ import { useGameStore } from "@/stores/gameStore";
 
 const FINISH_COLOR = "#ffd166";
 
-/** Línea de meta: sensor perpendicular al último tramo que dispara win() al cruzarla la chapa. */
+/** Línea de meta: sensor perpendicular al último tramo; primera chapa en cruzar gana. */
 export function FinishLine() {
   const track = getCurrentTrack();
   const { finish } = track;
@@ -17,12 +17,13 @@ export function FinishLine() {
 
   const { finishHeight, finishDepth, finishOpacity } = TRACK;
 
-  // Guard de status (patrón repo: getState(), sin selector suscrito). El guard por
-  // userData es red de seguridad si en el futuro entra otro dynamic body en escena.
   const handleIntersectionEnter = (payload: IntersectionEnterPayload) => {
     if (useGameStore.getState().status !== "playing") return;
-    if (payload.other.rigidBodyObject?.userData?.type !== "cap") return;
-    useGameStore.getState().win();
+    const userData = payload.other.rigidBodyObject?.userData;
+    if (userData?.type !== "cap") return;
+    const playerIndex = userData.playerIndex;
+    if (typeof playerIndex !== "number") return;
+    useGameStore.getState().playerFinished(playerIndex);
   };
 
   return (

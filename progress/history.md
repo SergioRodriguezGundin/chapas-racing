@@ -46,3 +46,39 @@
 - Con modal abierto no se puede lanzar (guard de startAiming por status, feature 3). Reset via restart repone estado (feature 3) y teleporta (feature 6).
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Interacción visual pendiente-de-humano.
 - Artefactos: `progress/impl_victory_modal.md`, `progress/review_victory_modal.md` (APPROVED).
+
+## Infra — shadcn/ui preset (feature/spec-3)
+
+### Design system — preset b311U8NYiG (done)
+- Modo ligero (implementación directa, sin harness).
+- Problema inicial: `pnpm dlx shadcn apply --preset b311U8NYiG` fallaba sin `components.json` (comando `apply` solo válido tras `init`).
+- Prerequisito manual: Tailwind CSS v4 (`tailwindcss`, `@tailwindcss/postcss`, `postcss`) + `postcss.config.mjs` antes de que el CLI aceptara el init.
+- `pnpm dlx shadcn@latest init --preset b311U8NYiG --template next`: preset **base-vega**, baseColor **mist**, theme **yellow**, fuentes **Noto Sans / Outfit** (via `next/font` en `layout.tsx`).
+- Nuevos archivos: `components.json`, `src/lib/utils.ts`, `src/components/ui/{button,dialog,progress}.tsx`.
+- `src/app/globals.css`: variables del preset shadcn + estilos del juego (HUD, canvas, overlay dialog) conservados al final del archivo para no perder layout del juego.
+- Migración UI: `VictoryModal` → `Dialog` + `Button`; `Hud` → `Progress` (gradiente rojo→verde de potencia preservado).
+- Excepción a regla de deps cerradas (`docs/architecture.md`): aprobada explícitamente por el usuario para shadcn/Tailwind/@base-ui/lucide.
+- Verificación: `pnpm tsc --noEmit` limpio; `pnpm build` limpio; smoke test dev OK tras limpiar `.next`.
+- Commit: `ee858fb` — *Initialize shadcn preset and migrate game UI overlays.* (push `origin/feature/spec-3`).
+
+### Design system — shadcn CSS cleanup (done)
+- Modo harness (leader → implementer → reviewer).
+- Eliminado bloque CSS custom del juego en `globals.css` (`.game-root`, `.loading`, `.hud`, `.hud-phase`, override dialog overlay). Solo queda preset shadcn/tailwind.
+- Layout fullscreen migrado a Tailwind: `layout.tsx` (`h-full overflow-hidden`), `page.tsx` (`fixed inset-0`, loading con `text-muted-foreground`).
+- `Hud.tsx`: `Badge` variant secondary + `Progress` con gradiente `var(--destructive)`→`var(--primary)` (sin hex).
+- `VictoryModal.tsx`: tokens preset (`bg-popover`, `text-primary`, `border-border`, Button default).
+- Nuevo `src/components/ui/badge.tsx` (shadcn add, sin deps npm nuevas).
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Visual pendiente-de-humano.
+- Artefactos: `progress/impl_shadcn_css_cleanup.md`, `progress/review_shadcn_css_cleanup.md` (APPROVED).
+
+## F02 — Auth / Perfil Supabase (done)
+
+- Modo harness (leader → implementers en paralelo B∥C → E → D → reviewers).
+- **F02-A** Cliente Supabase: `@supabase/supabase-js`, `@supabase/ssr`, factories browser/server/middleware, middleware mínimo sin `/`.
+- **F02-B** Login UI: `/login`, `LoginForm`, email/password + Google OAuth, callback PKCE.
+- **F02-C** Migración `profiles` + RLS + bucket `avatars` + trigger signup; tipos regenerados.
+- **F02-E** Protección rutas: `/online`, `/editor`, `/profile` protegidas; hot-seat `/` público.
+- **F02-D** Editor perfil: display_name, cap_color, avatar upload, logout, link en HUD.
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios en cada sub-tarea.
+- Artefactos: `progress/impl_F02-*.md`, `progress/review_F02-*.md` (todos APPROVED).
+- Manual pendiente: Google OAuth en Dashboard, signup + RLS cross-user en local.
