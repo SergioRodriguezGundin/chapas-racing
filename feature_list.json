@@ -1,6 +1,6 @@
 {
   "project": "chapas-racing",
-  "description": "Roadmap activo de implementación. Completado: iteración 2 (features 1–8), F01 hot-seat (BUG-01..03), F02 auth/perfil Supabase (F02-A..E). Bitácora: progress/history.md. Añadir aquí la siguiente iteración (p. ej. F03 online) cuando exista spec en specs/.",
+  "description": "Roadmap activo. Completado: iteración 2 (1–8), F01 hot-seat (BUG-01..03), F02 auth/perfil (F02-A..E), F02.5 auth-first (F02.5-A..C). Bitácora: progress/history.md.",
   "rules": {
     "one_feature_at_a_time": true,
     "require_typecheck_and_build_to_close": true,
@@ -9,9 +9,69 @@
   "completed": {
     "iteration_2": ["1", "2", "3", "4", "5", "6", "7", "8"],
     "f01_hot_seat": ["BUG-01", "BUG-02", "BUG-03"],
-    "f02_auth_profile": ["F02-A", "F02-B", "F02-C", "F02-D", "F02-E"]
+    "f02_auth_profile": ["F02-A", "F02-B", "F02-C", "F02-D", "F02-E"],
+    "f02_5_auth_first": ["F02.5-A", "F02.5-B", "F02.5-C"]
   },
-  "features": [],
-  "suggested_order": [],
-  "dependency_graph": {}
+  "features": [
+    {
+      "id": "F02.5-A",
+      "name": "app_stage_state_machine",
+      "title": "F02.5-A — appStage: máquina auth → setup → match",
+      "description": "Introducir appStage ('auth' | 'setup' | 'match') por encima de MatchStatus en gameStore (o store dedicado mínimo). Acciones de transición: enterAuth, skipAuth/enterSetup, enterMatch (al startMatch), y logoutToAuth. Gating en page.tsx: qué capa UI montar según stage. Sin UI de login aún ni prefill — solo estado y cableado mínimo para que SetupScreen/Hud/Canvas respeten el stage. Spec: specs/feature_list.md § F02.5.",
+      "depends_on": [],
+      "blocks": ["F02.5-B", "F02.5-C"],
+      "acceptance": [
+        "Existe tipo AppStage = 'auth' | 'setup' | 'match' y estado inicial 'auth' (o equivalente documentado)",
+        "Acciones: pasar a setup (skip/login path), pasar a match al startMatch existente, volver a auth (logout path) sin romper MatchStatus playing/finished",
+        "page.tsx (o shell) monta/oculta SetupScreen / Hud / VictoryModal según appStage; en 'auth' no se muestra el setup de partida",
+        "newMatch() vuelve a appStage 'setup' (no a auth) — reconfigurar jugadores sin forzar re-login",
+        "Semántica de phase/MatchStatus de F01 intacta cuando appStage === 'match'",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero dependencias nuevas"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F02.5-B",
+      "name": "auth_entry_fullscreen_skip",
+      "title": "F02.5-B — Pantalla auth fullscreen + Saltar + sesión activa",
+      "description": "Primera pantalla de la app: login/registro fullscreen (reutilizar LoginForm, no modal). Botón «Saltar» → appStage setup en modo invitado (session === null). Si hay sesión persistida al abrir → saltar auth y entrar a setup. Tras login/registro exitoso → setup. Spec: specs/feature_list.md § F02.5.",
+      "depends_on": ["F02.5-A"],
+      "blocks": ["F02.5-C"],
+      "acceptance": [
+        "Al abrir la app sin sesión, lo primero es la pantalla de login/registro a pantalla completa (no modal)",
+        "Botón «Saltar» visible → appStage 'setup' en modo invitado",
+        "Login/registro exitoso → appStage 'setup'",
+        "Sesión ya activa (cookies F02) al abrir → se salta auth y entra directo a setup",
+        "Ruta /login existente no rompe; home (/) es el flujo principal auth-first",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero dependencias nuevas"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F02.5-C",
+      "name": "setup_prefill_profile_logout",
+      "title": "F02.5-C — Prefill setup desde perfil + logout",
+      "description": "Con sesión activa, SetupScreen pre-rellena Jugador 1 con display_name y cap_color del perfil. Color mapeado a la paleta PLAYER_COLORS (config/physics.ts; si fuera de paleta, el más cercano). Prefill editable; editar NO escribe al perfil. Logout desde setup → appStage 'auth'. Modo invitado sin prefill. Spec: specs/feature_list.md § F02.5.",
+      "depends_on": ["F02.5-A", "F02.5-B"],
+      "blocks": [],
+      "acceptance": [
+        "Login exitoso o sesión activa → Jugador 1 pre-rellenado con display name y color de chapa del perfil",
+        "Color del perfil mapeado a PLAYER_COLORS (más cercano si no coincide exacto)",
+        "Jugador 1 pre-rellenado sigue editable; cambios en setup no modifican profiles en DB",
+        "Modo invitado (session === null): mismos campos, sin prefill ni persistencia de perfil",
+        "Logout desde el setup → vuelve a pantalla de login (appStage 'auth')",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero dependencias nuevas"
+      ],
+      "status": "done"
+    }
+  ],
+  "suggested_order": ["F02.5-A", "F02.5-B", "F02.5-C"],
+  "dependency_graph": {
+    "F02.5-A": [],
+    "F02.5-B": ["F02.5-A"],
+    "F02.5-C": ["F02.5-A", "F02.5-B"]
+  }
 }

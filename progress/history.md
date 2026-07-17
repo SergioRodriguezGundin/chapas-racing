@@ -82,3 +82,14 @@
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios en cada sub-tarea.
 - Artefactos: `progress/impl_F02-*.md`, `progress/review_F02-*.md` (todos APPROVED).
 - Manual pendiente: Google OAuth en Dashboard, signup + RLS cross-user en local.
+
+## F02.5 — Flujo de entrada auth-first (done)
+
+- Modo harness (leader → implementer → reviewer) por subtarea A → B → C.
+- **F02.5-A** `appStage` auth|setup|match en `gameStore` + gating en `page.tsx`.
+- **F02.5-B** `AuthEntryScreen` fullscreen + Saltar + auto-setup si sesión; `/login` intacto.
+- **F02.5-C** Prefill Jugador 1 desde `profiles` + `nearestPlayerColor` + logout → auth.
+- Criterios F02.5 marcados en `specs/feature_list.md`. Completado en `feature_list.json`.
+- Verificación: `tsc` + `build` verdes en cada subtarea (reviewers).
+- Artefactos: `progress/impl_F02.5-*.md`, `progress/review_F02.5-*.md` (todos APPROVED).
+- Manual pendiente: flujo completo en browser (skip, login, prefill, logout, sesión persistida).

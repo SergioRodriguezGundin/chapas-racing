@@ -9,8 +9,14 @@ import { getCurrentTrack } from "@/features/track/track.types";
  */
 export type GamePhase = "idle" | "aiming" | "moving";
 
-/** Ciclo de vida de la partida multijugador. */
+/** Ciclo de vida de la partida multijugador (F01). Independiente de AppStage. */
 export type MatchStatus = "setup" | "playing" | "finished";
+
+/**
+ * Capa de flujo de app por encima de MatchStatus (F02.5).
+ * auth → setup → match; newMatch vuelve a setup; logoutToAuth → auth.
+ */
+export type AppStage = "auth" | "setup" | "match";
 
 export type Vec3 = [number, number, number];
 
@@ -33,6 +39,8 @@ interface AimState {
 const AIM_ZERO: AimState = { direction: [0, 0, -1], power: 0 };
 
 interface GameState {
+  /** Flujo auth-first (F02.5). Inicial: auth (login UI llega en F02.5-B). */
+  appStage: AppStage;
   phase: GamePhase;
   status: MatchStatus;
   players: Player[];
@@ -51,21 +59,34 @@ interface GameState {
   settle: () => void;
   /** Primera chapa en cruzar la meta -> partida terminada. */
   playerFinished: (playerIndex: number) => void;
-  /** Reinicia con los mismos jugadores (strokes y posiciones a salida). */
+  /** Reinicia con los mismos jugadores (strokes y posiciones a salida). Permanece en match. */
   restart: () => void;
-  /** Vuelve a setup para reconfigurar jugadores (F01-B/C). */
+  /** Vuelve a setup para reconfigurar jugadores (no a auth). */
   newMatch: () => void;
-  /** Inicia partida con la configuración elegida (F01-B). */
+  /** Inicia partida con la configuración elegida; entra en appStage match. */
   startMatch: (configs: Array<{ name: string; color: string }>) => void;
+  /** Skip/login path → setup (F02.5-B). */
+  enterSetup: () => void;
+  /** Logout path → auth; limpia partida sin dejar MatchStatus en playing/finished huérfanos. */
+  logoutToAuth: () => void;
 }
 
-export const useGameStore = create<GameState>((set) => ({
+/** Partida limpia (status setup, sin jugadores). Usado al entrar/salir de auth y newMatch. */
+const MATCH_CLEAN: Pick<
+  GameState,
+  "phase" | "status" | "players" | "activePlayerIndex" | "winnerIndex" | "aim"
+> = {
   phase: "idle",
   status: "setup",
   players: [],
   activePlayerIndex: 0,
   winnerIndex: null,
   aim: AIM_ZERO,
+};
+
+export const useGameStore = create<GameState>((set) => ({
+  appStage: "auth",
+  ...MATCH_CLEAN,
   resetRequestId: 0,
 
   startAiming: () =>
@@ -107,6 +128,7 @@ export const useGameStore = create<GameState>((set) => ({
     }),
   restart: () =>
     set((s) => ({
+      appStage: "match",
       phase: "idle",
       status: "playing",
       winnerIndex: null,
@@ -121,12 +143,8 @@ export const useGameStore = create<GameState>((set) => ({
     })),
   newMatch: () =>
     set({
-      phase: "idle",
-      status: "setup",
-      players: [],
-      activePlayerIndex: 0,
-      winnerIndex: null,
-      aim: AIM_ZERO,
+      appStage: "setup",
+      ...MATCH_CLEAN,
     }),
   startMatch: (configs) => {
     const track = getCurrentTrack();
@@ -140,6 +158,7 @@ export const useGameStore = create<GameState>((set) => ({
       startPosition: positions[i],
     }));
     set({
+      appStage: "match",
       phase: "idle",
       status: "playing",
       players,
@@ -149,4 +168,14 @@ export const useGameStore = create<GameState>((set) => ({
       resetRequestId: 0,
     });
   },
+  enterSetup: () =>
+    set({
+      appStage: "setup",
+      ...MATCH_CLEAN,
+    }),
+  logoutToAuth: () =>
+    set({
+      appStage: "auth",
+      ...MATCH_CLEAN,
+    }),
 }));

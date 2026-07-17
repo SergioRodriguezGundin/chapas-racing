@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 import { useGameStore } from "@/stores/gameStore";
+import { AuthEntryScreen } from "@/ui/AuthEntryScreen";
 import { AuthNav } from "@/ui/AuthNav";
 import { Hud } from "@/ui/Hud";
 import { SetupScreen } from "@/ui/SetupScreen";
@@ -22,15 +23,16 @@ const GameCanvas = dynamic(
 );
 
 export default function Home() {
-  const status = useGameStore((s) => s.status);
+  const appStage = useGameStore((s) => s.appStage);
 
   return (
     <main className="fixed inset-0">
-      <AuthNav />
+      {appStage !== "auth" && <AuthNav />}
       <GameCanvas />
-      {status !== "setup" && <Hud />}
-      <SetupScreen />
-      <VictoryModal />
+      {appStage === "auth" && <AuthEntryScreen />}
+      {appStage === "setup" && <SetupScreen />}
+      {appStage === "match" && <Hud />}
+      {appStage === "match" && <VictoryModal />}
     </main>
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { MATCH, PLAYER_COLORS } from "@/config/physics";
+import { nearestPlayerColor } from "@/lib/nearestPlayerColor";
+import { createClient } from "@/lib/supabase/client";
 import { useGameStore } from "@/stores/gameStore";
 
 interface PlayerDraft {
@@ -20,14 +22,74 @@ function createDefaultDrafts(count: number): PlayerDraft[] {
 
 /** Pantalla de configuración previa a la partida (2–4 jugadores, nombre + color). */
 export function SetupScreen() {
-  const status = useGameStore((s) => s.status);
   const startMatch = useGameStore((s) => s.startMatch);
+  const logoutToAuth = useGameStore((s) => s.logoutToAuth);
 
   const [drafts, setDrafts] = useState<PlayerDraft[]>(() =>
     createDefaultDrafts(MATCH.minPlayers),
   );
+  const [hasSession, setHasSession] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  // Prefill una sola vez al montar setup (antes de editar); no re-aplicar tras edits.
+  const [prefillReady, setPrefillReady] = useState(false);
+  const prefillAppliedRef = useRef(false);
 
-  if (status !== "setup") return null;
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+
+    void (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (cancelled) return;
+
+      if (!user) {
+        setHasSession(false);
+        setPrefillReady(true);
+        return;
+      }
+
+      setHasSession(true);
+
+      if (!prefillAppliedRef.current) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, cap_color")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        const displayName =
+          profile?.display_name?.trim() ||
+          (typeof user.user_metadata?.full_name === "string"
+            ? user.user_metadata.full_name
+            : typeof user.user_metadata?.name === "string"
+              ? user.user_metadata.name
+              : user.email?.split("@")[0] ?? "Jugador");
+
+        const capColor = profile?.cap_color
+          ? nearestPlayerColor(profile.cap_color)
+          : PLAYER_COLORS[0];
+
+        prefillAppliedRef.current = true;
+        setDrafts((prev) => {
+          if (prev.length === 0) return prev;
+          return [{ name: displayName, color: capColor }, ...prev.slice(1)];
+        });
+      }
+
+      if (!cancelled) {
+        setPrefillReady(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const playerCount = drafts.length;
 
@@ -61,6 +123,27 @@ export function SetupScreen() {
       })),
     );
   };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut();
+    setLoggingOut(false);
+    if (error) return;
+    logoutToAuth();
+  };
+
+  if (!prefillReady) {
+    return (
+      <div
+        className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <p className="text-sm text-muted-foreground">Cargando…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
@@ -144,6 +227,18 @@ export function SetupScreen() {
         <Button type="button" className="mt-6 w-full" size="lg" onClick={handleStart}>
           Empezar
         </Button>
+
+        {hasSession ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="mt-3 w-full"
+            disabled={loggingOut}
+            onClick={() => void handleLogout()}
+          >
+            {loggingOut ? "Cerrando sesión…" : "Cerrar sesión"}
+          </Button>
+        ) : null}
       </div>
     </div>
   );
