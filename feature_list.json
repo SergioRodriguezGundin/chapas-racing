@@ -1,6 +1,6 @@
 {
   "project": "chapas-racing",
-  "description": "Roadmap activo. Completado: iteración 2 (1–8), F01 hot-seat (BUG-01..03), F02 auth/perfil (F02-A..E), F02.5 auth-first (F02.5-A..C), F03 online (F03-A..E). Siguiente elegible: F07 leaderboards (orden sugerido). Bitácora: progress/history.md.",
+  "description": "Roadmap activo. Completado: iter2, F01, F02, F02.5, F03 (A–E). En cola: F03.5 hub local/online post-auth. Luego F07 leaderboards (orden sugerido). Bitácora: progress/history.md.",
   "rules": {
     "one_feature_at_a_time": true,
     "require_typecheck_and_build_to_close": true,
@@ -15,155 +15,73 @@
   },
   "features": [
     {
-      "id": "F02.5-A",
-      "name": "app_stage_state_machine",
-      "title": "F02.5-A — appStage: máquina auth → setup → match",
-      "description": "Introducir appStage ('auth' | 'setup' | 'match') por encima de MatchStatus en gameStore (o store dedicado mínimo). Acciones de transición: enterAuth, skipAuth/enterSetup, enterMatch (al startMatch), y logoutToAuth. Gating en page.tsx: qué capa UI montar según stage. Sin UI de login aún ni prefill — solo estado y cableado mínimo para que SetupScreen/Hud/Canvas respeten el stage. Spec: specs/feature_list.md § F02.5.",
+      "id": "F03.5-A",
+      "name": "mode_select_stage",
+      "title": "F03.5-A — appStage mode + pantalla Local / Online",
+      "description": "Tras auth (login, sesión persistida o Saltar), insertar pantalla de elección de modo ANTES del setup de jugadores. Extender AppStage con 'mode' (flujo: auth → mode → setup|online → match). Pantalla fullscreen con dos opciones: «Jugar en local» y «Jugar online». Sin cablear aún las ramas completas de setup/lobby — solo stage, UI de elección y transiciones enterMode / chooseLocal / chooseOnline (stubs o navegación mínima). Spec implícita: hub post-auth; reutiliza F02.5 + F03.",
       "depends_on": [],
-      "blocks": ["F02.5-B", "F02.5-C"],
+      "blocks": ["F03.5-B", "F03.5-C"],
       "acceptance": [
-        "Existe tipo AppStage = 'auth' | 'setup' | 'match' y estado inicial 'auth' (o equivalente documentado)",
-        "Acciones: pasar a setup (skip/login path), pasar a match al startMatch existente, volver a auth (logout path) sin romper MatchStatus playing/finished",
-        "page.tsx (o shell) monta/oculta SetupScreen / Hud / VictoryModal según appStage; en 'auth' no se muestra el setup de partida",
-        "newMatch() vuelve a appStage 'setup' (no a auth) — reconfigurar jugadores sin forzar re-login",
-        "Semántica de phase/MatchStatus de F01 intacta cuando appStage === 'match'",
+        "AppStage incluye 'mode' entre 'auth' y los flujos de partida (setup local / online)",
+        "Tras login exitoso, sesión ya activa al abrir, o Saltar → appStage 'mode' (ya no se salta directo a setup)",
+        "Pantalla mode: dos CTAs claros — «Jugar en local» y «Jugar online»",
+        "page.tsx (home /) monta ModeSelectScreen cuando appStage === 'mode'; no muestra SetupScreen ni lobby online en ese stage",
+        "logoutToAuth desde mode (si hay control) vuelve a 'auth'; newMatch no debe saltarse 'mode' sin decisión documentada",
         "pnpm tsc --noEmit y pnpm build limpios",
         "Cero dependencias nuevas"
       ],
-      "status": "done"
+      "status": "pending"
     },
     {
-      "id": "F02.5-B",
-      "name": "auth_entry_fullscreen_skip",
-      "title": "F02.5-B — Pantalla auth fullscreen + Saltar + sesión activa",
-      "description": "Primera pantalla de la app: login/registro fullscreen (reutilizar LoginForm, no modal). Botón «Saltar» → appStage setup en modo invitado (session === null). Si hay sesión persistida al abrir → saltar auth y entrar a setup. Tras login/registro exitoso → setup. Spec: specs/feature_list.md § F02.5.",
-      "depends_on": ["F02.5-A"],
-      "blocks": ["F02.5-C"],
+      "id": "F03.5-B",
+      "name": "local_branch_setup",
+      "title": "F03.5-B — Rama local: setup jugadores (nombre/color/nº)",
+      "description": "«Jugar en local» → appStage 'setup' con el flujo F01/F02.5 existente: nº jugadores 2–4, nombre + color de chapa, prefill Jugador 1 si hay sesión. Desde SetupScreen, volver a mode (no a auth) salvo logout. Invitado (session null) puede usar local con normalidad. Hot-seat matchMode local intacto.",
+      "depends_on": ["F03.5-A"],
+      "blocks": ["F03.5-C"],
       "acceptance": [
-        "Al abrir la app sin sesión, lo primero es la pantalla de login/registro a pantalla completa (no modal)",
-        "Botón «Saltar» visible → appStage 'setup' en modo invitado",
-        "Login/registro exitoso → appStage 'setup'",
-        "Sesión ya activa (cookies F02) al abrir → se salta auth y entra directo a setup",
-        "Ruta /login existente no rompe; home (/) es el flujo principal auth-first",
+        "CTA «Jugar en local» → SetupScreen (nº jugadores, nombres, colores)",
+        "Con sesión: Jugador 1 pre-rellenado (display_name + cap_color → PLAYER_COLORS) como F02.5-C",
+        "Sin sesión (Saltar): setup usable sin prefill",
+        "Iniciar partida local → match hot-seat; física/turnos F01 sin cambios",
+        "Navegación atrás desde setup → mode (no auth); logout → auth",
         "pnpm tsc --noEmit y pnpm build limpios",
         "Cero dependencias nuevas"
       ],
-      "status": "done"
+      "status": "pending"
     },
     {
-      "id": "F02.5-C",
-      "name": "setup_prefill_profile_logout",
-      "title": "F02.5-C — Prefill setup desde perfil + logout",
-      "description": "Con sesión activa, SetupScreen pre-rellena Jugador 1 con display_name y cap_color del perfil. Color mapeado a la paleta PLAYER_COLORS (config/physics.ts; si fuera de paleta, el más cercano). Prefill editable; editar NO escribe al perfil. Logout desde setup → appStage 'auth'. Modo invitado sin prefill. Spec: specs/feature_list.md § F02.5.",
-      "depends_on": ["F02.5-A", "F02.5-B"],
+      "id": "F03.5-C",
+      "name": "online_branch_lobby_home",
+      "title": "F03.5-C — Rama online: crear/unirse en el hub (reutilizar F03)",
+      "description": "«Jugar online» desde mode → UI de crear sala / unirse por código / lobby (reutilizar OnlineLobby y RPCs F03; no reimplementar sync). Integrar en el flujo de `/` (appStage online o montaje condicional), no como único entry en `/online`. Sesión obligatoria: invitado que pulse Online → login o CTA deshabilitado con mensaje. Código de sala visible/compartible al crear. `/online` puede redirigir al hub o montar el mismo flujo. newMatch / salir de victoria online → mode o lobby según decisión documentada (preferencia: volver a mode).",
+      "depends_on": ["F03.5-A", "F03.5-B"],
       "blocks": [],
       "acceptance": [
-        "Login exitoso o sesión activa → Jugador 1 pre-rellenado con display name y color de chapa del perfil",
-        "Color del perfil mapeado a PLAYER_COLORS (más cercano si no coincide exacto)",
-        "Jugador 1 pre-rellenado sigue editable; cambios en setup no modifican profiles en DB",
-        "Modo invitado (session === null): mismos campos, sin prefill ni persistencia de perfil",
-        "Logout desde el setup → vuelve a pantalla de login (appStage 'auth')",
+        "CTA «Jugar online» con sesión → crear sala o unirse por código (mismo comportamiento F03-C)",
+        "Crear sala genera código corto visible/compartible; unirse con código válido entra al lobby",
+        "Lobby + start + partida online siguen usando stack F03 (Realtime, launch/settle) sin regresiones",
+        "Sin sesión: Online no entra al lobby anónimo (pide login o deshabilita con mensaje claro)",
+        "Flujo principal en `/` (hub); `/online` no es el único camino o redirige coherentemente",
+        "Salir de lobby / fin de partida online vuelve a mode (o ruta documentada equivalente), no al setup local",
         "pnpm tsc --noEmit y pnpm build limpios",
         "Cero dependencias nuevas"
       ],
-      "status": "done"
-    },
-    {
-      "id": "F03-A",
-      "name": "spike_transport_sync",
-      "title": "F03-A — Spike: transporte Realtime + estrategia de sync",
-      "description": "Spike obligatorio (specs/feature_list.md § F03 notas). Evaluar Supabase Realtime channels vs WS dedicado; validar modelo recomendado turno-based: replicar input {direction, power} + snapshot de posiciones al settle() como corrección. Documentar decisión, riesgos de divergencia física, límites de payload/latencia, y contrato de eventos tentativo. Sin implementación de salas/partida jugable — solo research + PoC mínimo si hace falta desbloquear decisión. Hallazgos en progress/research_f03_realtime_sync.md.",
-      "depends_on": [],
-      "blocks": ["F03-B", "F03-C", "F03-D", "F03-E"],
-      "acceptance": [
-        "Documento progress/research_f03_realtime_sync.md con decisión de transporte (Realtime vs WS) y justificación",
-        "Estrategia de sync elegida documentada: input replication + settle snapshot (o alternativa con trade-offs)",
-        "Contrato tentativo de mensajes/eventos (crear sala, join, start, launch, settle, disconnect, end)",
-        "Si se propone dep nueva (WS propio u otra lib): estado blocked y discusión — no añadir sin acuerdo",
-        "PoC opcional mínimo no deja código muerto en src/ sin plan de uso en F03-B+",
-        "pnpm tsc --noEmit y pnpm build limpios si se tocó código"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "F03-B",
-      "name": "rooms_schema_rls",
-      "title": "F03-B — Schema salas/partida + RLS + códigos",
-      "description": "Modelo Postgres para sesiones online: salas con código corto único, pista seleccionada, capacidad 2–4, miembros (host/jugador, perfil), estado de lobby/partida. RLS: solo autenticados; host controla inicio; miembros ven su sala. Tipos regenerados. Sin UI de lobby ni sync de lanzamientos — solo persistencia y políticas. Alineado a decisión F03-A. Spec: specs/feature_list.md § F03.",
-      "depends_on": ["F03-A"],
-      "blocks": ["F03-C", "F03-D", "F03-E"],
-      "acceptance": [
-        "Migración(es): salas con código corto único, track_id, max_players 2–4, host, status (lobby/playing/finished o equivalente)",
-        "Miembros de sala ligados a auth.users/profiles; constraints de capacidad y unicidad por sala",
-        "RLS: usuario autenticado crea/une; solo miembros leen; host (o reglas documentadas) puede iniciar; sin filtrado = rechazo",
-        "Tipos TypeScript regenerados / actualizados para las tablas nuevas",
-        "Código corto generable de forma única (colisión manejada)",
-        "pnpm tsc --noEmit y pnpm build limpios",
-        "Cero deps nuevas salvo lo ya acordado en F03-A"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "F03-C",
-      "name": "lobby_create_join",
-      "title": "F03-C — Lobby: crear/unirse por código + presencia realtime",
-      "description": "UI y flujo en /online (protegida F02-E): crear sala (código, selección de pista, 2–4 slots), unirse por código, lobby con lista de jugadores conectados en tiempo real. Host visible; no inicia partida aún (eso es F03-D) o botón deshabilitado hasta min jugadores. Reutiliza perfiles (display_name, cap_color). Spec: specs/feature_list.md § F03 CA crear/unirse/lobby.",
-      "depends_on": ["F03-A", "F03-B"],
-      "blocks": ["F03-D", "F03-E"],
-      "acceptance": [
-        "Crear sala: código corto único visible/compartible, selección de pista, capacidad 2–4",
-        "Unirse por código válido; código inválido/sala llena → error claro",
-        "Lobby muestra jugadores conectados en tiempo real (altas/bajas sin reload)",
-        "Ruta /online usable con sesión; stub «Próximamente» reemplazado por este flujo",
-        "Hot-seat en / intacto",
-        "pnpm tsc --noEmit y pnpm build limpios",
-        "Cero deps nuevas salvo lo acordado en F03-A"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "F03-D",
-      "name": "online_match_sync",
-      "title": "F03-D — Inicio de partida + turnos + sync de lanzamientos",
-      "description": "Host inicia partida desde lobby; todos los clientes entran en match con orden de turnos visible (reutilizar modelo F01: activePlayer, settle → rota). Lanzamiento del jugador activo se replica ({direction, power}); al settle() se aplica snapshot de posiciones como corrección (decisión F03-A). Clientes no activos no lanzan en local. Spec: specs/feature_list.md § F03 CA host/turnos/lanzamiento.",
-      "depends_on": ["F03-A", "F03-B", "F03-C"],
-      "blocks": ["F03-E"],
-      "acceptance": [
-        "Host inicia partida; todos los clientes pasan a playing con la misma pista y roster",
-        "Orden de turnos y jugador activo visibles y consistentes en todos los clientes",
-        "Solo el jugador activo puede lanzar en su cliente; input se replica en el resto",
-        "Tras settle(), posiciones corregidas vía snapshot (o mecanismo documentado en F03-A) en todos los clientes",
-        "Rotación de turno tras settle alineada con semántica F01",
-        "pnpm tsc --noEmit y pnpm build limpios",
-        "Cero deps nuevas salvo lo acordado en F03-A"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "F03-E",
-      "name": "disconnect_end_validate",
-      "title": "F03-E — Desconexión/reconexión + fin + validación server",
-      "description": "Resiliencia y cierre: si un jugador se desconecta, su turno se salta tras timeout configurable (config/); reconexión recupera estado de sala/partida. Fin de partida: ranking sincronizado en todos los clientes (mismo VictoryModal/datos). Validación server-side mínima: solo el jugador activo puede emitir launch (RPC/edge o política). Spec: specs/feature_list.md § F03 CA desconexión/fin/validación.",
-      "depends_on": ["F03-A", "F03-B", "F03-C", "F03-D"],
-      "blocks": [],
-      "acceptance": [
-        "Desconexión: turno del ausente se salta tras timeout; partida no se queda bloqueada",
-        "Reconexión: cliente recupera estado (lobby o match en curso) sin corromper turnos",
-        "Fin de partida: ranking idéntico/sincronizado en todos los clientes",
-        "Validación server-side: launch de no-activo rechazado; no basta con gate solo en cliente",
-        "Timeout y constantes de red en config/ (no magic numbers inline)",
-        "pnpm tsc --noEmit y pnpm build limpios",
-        "Cero deps nuevas salvo lo acordado en F03-A"
-      ],
-      "status": "done"
+      "status": "pending"
     }
   ],
-  "suggested_order": ["F03-A", "F03-B", "F03-C", "F03-D", "F03-E"],
+  "suggested_order": ["F03.5-A", "F03.5-B", "F03.5-C"],
   "dependency_graph": {
-    "F03-A": [],
-    "F03-B": ["F03-A"],
-    "F03-C": ["F03-A", "F03-B"],
-    "F03-D": ["F03-A", "F03-B", "F03-C"],
-    "F03-E": ["F03-A", "F03-B", "F03-C", "F03-D"]
+    "F03.5-A": [],
+    "F03.5-B": ["F03.5-A"],
+    "F03.5-C": ["F03.5-A", "F03.5-B"]
+  },
+  "flow": {
+    "summary": "auth → mode (Local | Online) → (local: setup → match) | (online: create/join lobby → match)",
+    "notes": [
+      "F03 backend/sync ya done; F03.5 solo reordena UX de entrada en home",
+      "Invitado: Local sí; Online requiere sesión",
+      "Reutilizar OnlineLobby / RPCs; no duplicar lógica de salas"
+    ]
   }
 }

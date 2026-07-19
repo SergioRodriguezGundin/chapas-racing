@@ -1,14 +1,26 @@
 # Estado actual
 
-**Feature:** _(ninguna en curso)_
+**Feature:** F03.5 — Hub Local / Online post-auth
 **Modo:** —
-**Subtarea:** —
+**Subtarea:** _(sin implementar; tareas en feature_list.json)_
 
-## Hecho
+## Flujo objetivo
 
-- F03 online completa (F03-A..E). Review F03-E APPROVED. Cierre docs aplicado.
+```
+auth (login | sesión | Saltar)
+  → mode (Jugar en local | Jugar online)
+      → local:  setup (nº / nombre / color) → match hot-seat
+      → online: crear sala | unirse por código → lobby → match (F03)
+```
 
-## Siguiente
+## Subtareas
 
-1. Primera elegible (orden sugerido): **F07 — Leaderboards** (`specs/feature_list.md` § F07).
-2. Depende de F01 (contador tiradas) + F02 (auth); F09 amigos opcional.
+1. **F03.5-A** — `appStage: 'mode'` + pantalla de elección
+2. **F03.5-B** — Rama local → SetupScreen existente
+3. **F03.5-C** — Rama online → reutilizar OnlineLobby en hub `/`
+
+## Notas
+
+- F03 A–E completado (sync/salas). F03.5 es UX de entrada.
+- Invitado: solo local; online exige sesión.
+- Siguiente tras F03.5 (roadmap): F07 leaderboards.
