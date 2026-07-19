@@ -1678,6 +1678,120 @@ export type Database = {
           },
         ]
       }
+      room_members: {
+        Row: {
+          connected: boolean
+          joined_at: string
+          last_seen_at: string
+          room_id: string
+          slot_index: number
+          strokes: number
+          user_id: string
+        }
+        Insert: {
+          connected?: boolean
+          joined_at?: string
+          last_seen_at?: string
+          room_id: string
+          slot_index: number
+          strokes?: number
+          user_id: string
+        }
+        Update: {
+          connected?: boolean
+          joined_at?: string
+          last_seen_at?: string
+          room_id?: string
+          slot_index?: number
+          strokes?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          active_slot: number | null
+          code: string
+          created_at: string
+          finished_at: string | null
+          host_id: string
+          id: string
+          launch_pending: boolean
+          max_players: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq: number
+          turn_started_at: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          active_slot?: number | null
+          code: string
+          created_at?: string
+          finished_at?: string | null
+          host_id: string
+          id?: string
+          launch_pending?: boolean
+          max_players: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq?: number
+          turn_started_at?: string | null
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          active_slot?: number | null
+          code?: string
+          created_at?: string
+          finished_at?: string | null
+          host_id?: string
+          id?: string
+          launch_pending?: boolean
+          max_players?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["room_status"]
+          track_id?: string
+          turn_seq?: number
+          turn_started_at?: string | null
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rooms_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_webhook_processed: {
         Row: {
           processed_at: string
@@ -2554,6 +2668,32 @@ export type Database = {
         }
         Returns: Json
       }
+      create_room: {
+        Args: { p_max_players: number; p_track_id: string }
+        Returns: {
+          active_slot: number | null
+          code: string
+          created_at: string
+          finished_at: string | null
+          host_id: string
+          id: string
+          launch_pending: boolean
+          max_players: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq: number
+          turn_started_at: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ensure_battle_pass_objective_progress_rows: {
         Args: { p_mission_id: string; p_mission_progress_id: string }
         Returns: undefined
@@ -2592,6 +2732,7 @@ export type Database = {
           team_leader_pts: number
         }[]
       }
+      generate_room_code: { Args: never; Returns: string }
       get_all_user_battle_passes: { Args: { p_user_id: string }; Returns: Json }
       get_checkout_session: {
         Args: { session_id: string }
@@ -2784,6 +2925,175 @@ export type Database = {
       }
       get_user_battle_pass: { Args: { p_user_id: string }; Returns: Json }
       grant_free_membership: { Args: { p_product_id: string }; Returns: Json }
+      is_room_member: { Args: { p_room_id: string }; Returns: boolean }
+      join_room: {
+        Args: { p_code: string }
+        Returns: {
+          connected: boolean
+          joined_at: string
+          last_seen_at: string
+          room_id: string
+          slot_index: number
+          strokes: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "room_members"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      leave_room: { Args: { p_room_id: string }; Returns: undefined }
+      start_room: {
+        Args: { p_room_id: string }
+        Returns: {
+          active_slot: number | null
+          code: string
+          created_at: string
+          finished_at: string | null
+          host_id: string
+          id: string
+          launch_pending: boolean
+          max_players: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq: number
+          turn_started_at: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      commit_room_settle: {
+        Args: {
+          p_room_id: string
+          p_turn_seq: number
+          p_next_active_slot: number
+          p_strokes?: Json
+        }
+        Returns: {
+          active_slot: number | null
+          code: string
+          created_at: string
+          finished_at: string | null
+          host_id: string
+          id: string
+          launch_pending: boolean
+          max_players: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq: number
+          turn_started_at: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      submit_room_launch: {
+        Args: {
+          p_room_id: string
+          p_turn_seq: number
+          p_direction: Json
+          p_power: number
+          p_from?: Json
+        }
+        Returns: {
+          active_slot: number | null
+          code: string
+          created_at: string
+          finished_at: string | null
+          host_id: string
+          id: string
+          launch_pending: boolean
+          max_players: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq: number
+          turn_started_at: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      skip_room_turn: {
+        Args: { p_room_id: string; p_turn_seq: number }
+        Returns: {
+          active_slot: number | null
+          code: string
+          created_at: string
+          finished_at: string | null
+          host_id: string
+          id: string
+          launch_pending: boolean
+          max_players: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq: number
+          turn_started_at: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      finish_room: {
+        Args: {
+          p_room_id: string
+          p_winner_user_id: string
+          p_ranking: Json
+        }
+        Returns: {
+          active_slot: number | null
+          code: string
+          created_at: string
+          finished_at: string | null
+          host_id: string
+          id: string
+          launch_pending: boolean
+          max_players: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["room_status"]
+          track_id: string
+          turn_seq: number
+          turn_started_at: string | null
+          updated_at: string
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      room_dense_user: {
+        Args: { p_room_id: string; p_dense_slot: number }
+        Returns: string
+      }
       mission_xp_reward_sum: { Args: { p_mission_id: string }; Returns: number }
       register_battle_pass_mission_progress: {
         Args: {
@@ -2978,6 +3288,7 @@ export type Database = {
         | "mistery_package"
         | "player"
         | "progression_xp"
+      room_status: "lobby" | "playing" | "finished"
       TournamentStatus: "scheduled" | "live" | "finished"
     }
     CompositeTypes: {
@@ -3145,6 +3456,7 @@ export const Constants = {
         "player",
         "progression_xp",
       ],
+      room_status: ["lobby", "playing", "finished"],
       TournamentStatus: ["scheduled", "live", "finished"],
     },
   },

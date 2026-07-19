@@ -93,3 +93,46 @@
 - Verificación: `tsc` + `build` verdes en cada subtarea (reviewers).
 - Artefactos: `progress/impl_F02.5-*.md`, `progress/review_F02.5-*.md` (todos APPROVED).
 - Manual pendiente: flujo completo en browser (skip, login, prefill, logout, sesión persistida).
+
+## F03 — Sesiones online multijugador (done)
+
+### F03-A — Spike transporte Realtime + sync (done)
+- Modo harness (leader → explorer → reviewer → implementer cierre docs).
+- Entregable: `progress/research_f03_realtime_sync.md` — decisión **Supabase Realtime** (Broadcast + Presence + postgres_changes); sync **input + settle snapshot**; contrato tentativo create/join/start/launch/settle/disconnect/end.
+- **No blocked** por deps; cero cambios en `src/` / `package.json`. PoC no realizado.
+- Review: `progress/review_F03-A.md` (APPROVED). Cierre: `progress/impl_F03-A.md`.
+- F03-B..E siguen pending; checkboxes F03 en `specs/feature_list.md` no marcados (feature completa abierta).
+
+### F03-B — Schema salas/partida + RLS + códigos (done)
+- Modo harness (leader → implementer → reviewer → fix CA3 → re-review → implementer cierre docs).
+- Migraciones: `supabase/migrations/20260718230000_rooms.sql` (rooms / room_members, RPCs `create_room`/`join_room`, RLS, Realtime) + correctiva `20260718231000_room_members_update_presence_only.sql` (UPDATE presence-only en members).
+- Tipos: `src/types/supabase.ts` regenerados. Sin UI lobby ni sync launch.
+- Review: `progress/review_F03-B.md` (APPROVED). Cierre: `progress/impl_F03-B.md`.
+- F03-C..E siguen pending; checkboxes F03 en `specs/feature_list.md` no marcados (feature completa abierta).
+
+### F03-C — Lobby create/join + presencia realtime (done)
+- Modo harness (leader → implementer → reviewer → fix leave durable → re-review → implementer cierre docs).
+- UI `/online`: `OnlineLobby` (crear/unirse por código, roster + Presence); config `src/config/online.ts`; stub reemplazado.
+- Post-review: RPC `leave_room` (`20260718232000_leave_room.sql`) — DELETE membership, host transfer / sala vacía; cableado botón + unmount.
+- Sin start match (botón Iniciar disabled → F03-D). Hot-seat `/` intacto. Cero deps nuevas.
+- Review: `progress/review_F03-C.md` (APPROVED). Cierre: `progress/impl_F03-C.md`.
+- F03-D..E siguen pending; checkboxes F03 en `specs/feature_list.md` no marcados (feature completa abierta).
+
+### F03-D — Inicio de partida + turnos + sync de lanzamientos (done)
+- Modo harness (leader → implementer → reviewer → fix índice denso/roster → re-review → implementer cierre docs).
+- Start durable: RPC `start_room` + `postgres_changes` → `beginOnlineMatch`; Broadcast launch/settle + `turn_seq`; gate aim por `session.slotIndex`.
+- Post-review: roster canónico vía `fetchLobbyMembers` incondicional; `playerIndex` denso (`findIndex`) alinea Cap/Hud/rotación aunque DB tenga gaps tras leave.
+- Hot-seat `/` intacto (`matchMode` default `"local"`). Cero deps nuevas. Constantes en `config/online.ts`.
+- Review: `progress/review_F03-D.md` (APPROVED). Cierre: `progress/impl_F03-D.md`.
+
+### F03-E — Desconexión/reconexión + fin + validación server (done)
+- Modo harness (leader → implementer → reviewer → fix reconnect CA2 → re-review → implementer cierre docs).
+- RPCs `submit_room_launch` / `skip_room_turn` / `finish_room`; timeout disconnect + heartbeat en `config/online.ts`; ranking sync vía `finish_room` + VictoryModal.
+- Post-review: `findActiveMembershipForReconnect` (array + pick lobby|playing; leave finished huérfanos) — nunca `maybeSingle` sobre 0..N memberships.
+- Hot-seat `/` intacto. Cero deps nuevas. Review: `progress/review_F03-E.md` (APPROVED). Cierre: `progress/impl_F03-E.md`.
+
+### Feature F03 completa (done)
+- Subtareas A–E cerradas. Checkboxes § F03 en `specs/feature_list.md` marcados `[x]`.
+- `feature_list.json`: `completed.f03_online` = A..E; F03-E `status: done`.
+- Manual QA multi-cliente (disconnect skip, reconnect F5, ranking, spoof launch) sigue pendiente humano — no bloqueó APPROVED.
+- Siguiente elegible (orden sugerido): **F07 — Leaderboards**.

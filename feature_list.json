@@ -1,6 +1,6 @@
 {
   "project": "chapas-racing",
-  "description": "Roadmap activo. Completado: iteración 2 (1–8), F01 hot-seat (BUG-01..03), F02 auth/perfil (F02-A..E), F02.5 auth-first (F02.5-A..C). Bitácora: progress/history.md.",
+  "description": "Roadmap activo. Completado: iteración 2 (1–8), F01 hot-seat (BUG-01..03), F02 auth/perfil (F02-A..E), F02.5 auth-first (F02.5-A..C), F03 online (F03-A..E). Siguiente elegible: F07 leaderboards (orden sugerido). Bitácora: progress/history.md.",
   "rules": {
     "one_feature_at_a_time": true,
     "require_typecheck_and_build_to_close": true,
@@ -10,7 +10,8 @@
     "iteration_2": ["1", "2", "3", "4", "5", "6", "7", "8"],
     "f01_hot_seat": ["BUG-01", "BUG-02", "BUG-03"],
     "f02_auth_profile": ["F02-A", "F02-B", "F02-C", "F02-D", "F02-E"],
-    "f02_5_auth_first": ["F02.5-A", "F02.5-B", "F02.5-C"]
+    "f02_5_auth_first": ["F02.5-A", "F02.5-B", "F02.5-C"],
+    "f03_online": ["F03-A", "F03-B", "F03-C", "F03-D", "F03-E"]
   },
   "features": [
     {
@@ -66,12 +67,103 @@
         "Cero dependencias nuevas"
       ],
       "status": "done"
+    },
+    {
+      "id": "F03-A",
+      "name": "spike_transport_sync",
+      "title": "F03-A — Spike: transporte Realtime + estrategia de sync",
+      "description": "Spike obligatorio (specs/feature_list.md § F03 notas). Evaluar Supabase Realtime channels vs WS dedicado; validar modelo recomendado turno-based: replicar input {direction, power} + snapshot de posiciones al settle() como corrección. Documentar decisión, riesgos de divergencia física, límites de payload/latencia, y contrato de eventos tentativo. Sin implementación de salas/partida jugable — solo research + PoC mínimo si hace falta desbloquear decisión. Hallazgos en progress/research_f03_realtime_sync.md.",
+      "depends_on": [],
+      "blocks": ["F03-B", "F03-C", "F03-D", "F03-E"],
+      "acceptance": [
+        "Documento progress/research_f03_realtime_sync.md con decisión de transporte (Realtime vs WS) y justificación",
+        "Estrategia de sync elegida documentada: input replication + settle snapshot (o alternativa con trade-offs)",
+        "Contrato tentativo de mensajes/eventos (crear sala, join, start, launch, settle, disconnect, end)",
+        "Si se propone dep nueva (WS propio u otra lib): estado blocked y discusión — no añadir sin acuerdo",
+        "PoC opcional mínimo no deja código muerto en src/ sin plan de uso en F03-B+",
+        "pnpm tsc --noEmit y pnpm build limpios si se tocó código"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F03-B",
+      "name": "rooms_schema_rls",
+      "title": "F03-B — Schema salas/partida + RLS + códigos",
+      "description": "Modelo Postgres para sesiones online: salas con código corto único, pista seleccionada, capacidad 2–4, miembros (host/jugador, perfil), estado de lobby/partida. RLS: solo autenticados; host controla inicio; miembros ven su sala. Tipos regenerados. Sin UI de lobby ni sync de lanzamientos — solo persistencia y políticas. Alineado a decisión F03-A. Spec: specs/feature_list.md § F03.",
+      "depends_on": ["F03-A"],
+      "blocks": ["F03-C", "F03-D", "F03-E"],
+      "acceptance": [
+        "Migración(es): salas con código corto único, track_id, max_players 2–4, host, status (lobby/playing/finished o equivalente)",
+        "Miembros de sala ligados a auth.users/profiles; constraints de capacidad y unicidad por sala",
+        "RLS: usuario autenticado crea/une; solo miembros leen; host (o reglas documentadas) puede iniciar; sin filtrado = rechazo",
+        "Tipos TypeScript regenerados / actualizados para las tablas nuevas",
+        "Código corto generable de forma única (colisión manejada)",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero deps nuevas salvo lo ya acordado en F03-A"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F03-C",
+      "name": "lobby_create_join",
+      "title": "F03-C — Lobby: crear/unirse por código + presencia realtime",
+      "description": "UI y flujo en /online (protegida F02-E): crear sala (código, selección de pista, 2–4 slots), unirse por código, lobby con lista de jugadores conectados en tiempo real. Host visible; no inicia partida aún (eso es F03-D) o botón deshabilitado hasta min jugadores. Reutiliza perfiles (display_name, cap_color). Spec: specs/feature_list.md § F03 CA crear/unirse/lobby.",
+      "depends_on": ["F03-A", "F03-B"],
+      "blocks": ["F03-D", "F03-E"],
+      "acceptance": [
+        "Crear sala: código corto único visible/compartible, selección de pista, capacidad 2–4",
+        "Unirse por código válido; código inválido/sala llena → error claro",
+        "Lobby muestra jugadores conectados en tiempo real (altas/bajas sin reload)",
+        "Ruta /online usable con sesión; stub «Próximamente» reemplazado por este flujo",
+        "Hot-seat en / intacto",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero deps nuevas salvo lo acordado en F03-A"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F03-D",
+      "name": "online_match_sync",
+      "title": "F03-D — Inicio de partida + turnos + sync de lanzamientos",
+      "description": "Host inicia partida desde lobby; todos los clientes entran en match con orden de turnos visible (reutilizar modelo F01: activePlayer, settle → rota). Lanzamiento del jugador activo se replica ({direction, power}); al settle() se aplica snapshot de posiciones como corrección (decisión F03-A). Clientes no activos no lanzan en local. Spec: specs/feature_list.md § F03 CA host/turnos/lanzamiento.",
+      "depends_on": ["F03-A", "F03-B", "F03-C"],
+      "blocks": ["F03-E"],
+      "acceptance": [
+        "Host inicia partida; todos los clientes pasan a playing con la misma pista y roster",
+        "Orden de turnos y jugador activo visibles y consistentes en todos los clientes",
+        "Solo el jugador activo puede lanzar en su cliente; input se replica en el resto",
+        "Tras settle(), posiciones corregidas vía snapshot (o mecanismo documentado en F03-A) en todos los clientes",
+        "Rotación de turno tras settle alineada con semántica F01",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero deps nuevas salvo lo acordado en F03-A"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F03-E",
+      "name": "disconnect_end_validate",
+      "title": "F03-E — Desconexión/reconexión + fin + validación server",
+      "description": "Resiliencia y cierre: si un jugador se desconecta, su turno se salta tras timeout configurable (config/); reconexión recupera estado de sala/partida. Fin de partida: ranking sincronizado en todos los clientes (mismo VictoryModal/datos). Validación server-side mínima: solo el jugador activo puede emitir launch (RPC/edge o política). Spec: specs/feature_list.md § F03 CA desconexión/fin/validación.",
+      "depends_on": ["F03-A", "F03-B", "F03-C", "F03-D"],
+      "blocks": [],
+      "acceptance": [
+        "Desconexión: turno del ausente se salta tras timeout; partida no se queda bloqueada",
+        "Reconexión: cliente recupera estado (lobby o match en curso) sin corromper turnos",
+        "Fin de partida: ranking idéntico/sincronizado en todos los clientes",
+        "Validación server-side: launch de no-activo rechazado; no basta con gate solo en cliente",
+        "Timeout y constantes de red en config/ (no magic numbers inline)",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero deps nuevas salvo lo acordado en F03-A"
+      ],
+      "status": "done"
     }
   ],
-  "suggested_order": ["F02.5-A", "F02.5-B", "F02.5-C"],
+  "suggested_order": ["F03-A", "F03-B", "F03-C", "F03-D", "F03-E"],
   "dependency_graph": {
-    "F02.5-A": [],
-    "F02.5-B": ["F02.5-A"],
-    "F02.5-C": ["F02.5-A", "F02.5-B"]
+    "F03-A": [],
+    "F03-B": ["F03-A"],
+    "F03-C": ["F03-A", "F03-B"],
+    "F03-D": ["F03-A", "F03-B", "F03-C"],
+    "F03-E": ["F03-A", "F03-B", "F03-C", "F03-D"]
   }
 }

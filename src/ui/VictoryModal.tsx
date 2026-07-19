@@ -30,9 +30,11 @@ export function VictoryModal() {
   const status = useGameStore((s) => s.status);
   const players = useGameStore((s) => s.players);
   const winnerIndex = useGameStore((s) => s.winnerIndex);
+  const matchMode = useGameStore((s) => s.matchMode);
   const restart = useGameStore((s) => s.restart);
   const newMatch = useGameStore((s) => s.newMatch);
   const open = status === "finished";
+  const isOnline = matchMode === "online";
 
   const ranking = useMemo(() => {
     if (winnerIndex === null || players.length === 0) return [];
@@ -100,17 +102,25 @@ export function VictoryModal() {
         )}
 
         <DialogFooter className="flex-col gap-2 sm:flex-col sm:justify-center">
-          <Button type="button" className="w-full" onClick={restart}>
-            Jugar de nuevo
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={newMatch}
-          >
-            Nueva partida
-          </Button>
+          {isOnline ? (
+            <Button type="button" className="w-full" onClick={newMatch}>
+              Salir al lobby
+            </Button>
+          ) : (
+            <>
+              <Button type="button" className="w-full" onClick={restart}>
+                Jugar de nuevo
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={newMatch}
+              >
+                Nueva partida
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

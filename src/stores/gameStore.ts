@@ -18,6 +18,9 @@ export type MatchStatus = "setup" | "playing" | "finished";
  */
 export type AppStage = "auth" | "setup" | "match";
 
+/** Hot-seat local vs partida online (F03-D). */
+export type MatchMode = "local" | "online";
+
 export type Vec3 = [number, number, number];
 
 export interface Player {
@@ -29,11 +32,24 @@ export interface Player {
   startPosition: Vec3;
 }
 
+export interface PlayerConfig {
+  name: string;
+  color: string;
+  /** Id estable (p.ej. user_id online); default `player-{i}`. */
+  id?: string;
+}
+
 interface AimState {
   /** Dirección de disparo, unitaria, plano XZ */
   direction: Vec3;
   /** Potencia normalizada 0..1 */
   power: number;
+}
+
+export interface RemoteImpulse {
+  direction: Vec3;
+  power: number;
+  from: Vec3;
 }
 
 const AIM_ZERO: AimState = { direction: [0, 0, -1], power: 0 };
@@ -43,12 +59,19 @@ interface GameState {
   appStage: AppStage;
   phase: GamePhase;
   status: MatchStatus;
+  matchMode: MatchMode;
   players: Player[];
   activePlayerIndex: number;
   winnerIndex: number | null;
   aim: AimState;
   /** Contador que desacopla el teleport de reset del DOM: Cap observa su cambio. */
   resetRequestId: number;
+  /** Online: Cap aplica impulso remoto al ver el id cambiar. */
+  remoteImpulseRequestId: number;
+  pendingRemoteImpulse: RemoteImpulse | null;
+  /** Online: Cap teletransporta a pendingSnapshot[playerIndex]. */
+  snapshotRequestId: number;
+  pendingSnapshot: Vec3[] | null;
 
   startAiming: () => void;
   updateAim: (direction: Vec3, power: number) => void;
@@ -57,14 +80,33 @@ interface GameState {
   launch: (from: Vec3) => void;
   /** Chapa activa parada -> idle y rota turno. */
   settle: () => void;
+  /** Online remoto: launch + cola de impulso para Cap (sin re-emitir). */
+  queueRemoteImpulse: (direction: Vec3, power: number, from: Vec3) => void;
+  /** Online: teleport + alinear turno/strokes (sin +1 automático). */
+  applySettleSnapshot: (
+    positions: Vec3[],
+    nextActiveSlot: number,
+    strokes?: number[],
+  ) => void;
   /** Primera chapa en cruzar la meta -> partida terminada. */
   playerFinished: (playerIndex: number) => void;
+  /** Online: aplica ranking durable (postgres_changes / reconnect). */
+  applyOnlineFinish: (winnerIndex: number, strokes: number[]) => void;
   /** Reinicia con los mismos jugadores (strokes y posiciones a salida). Permanece en match. */
   restart: () => void;
   /** Vuelve a setup para reconfigurar jugadores (no a auth). */
   newMatch: () => void;
   /** Inicia partida con la configuración elegida; entra en appStage match. */
-  startMatch: (configs: Array<{ name: string; color: string }>) => void;
+  startMatch: (
+    configs: PlayerConfig[],
+    options?: {
+      mode?: MatchMode;
+      /** Dense active slot (reconnect mid-match). */
+      activePlayerIndex?: number;
+      /** Strokes por índice denso (reconnect). */
+      strokes?: number[];
+    },
+  ) => void;
   /** Skip/login path → setup (F02.5-B). */
   enterSetup: () => void;
   /** Logout path → auth; limpia partida sin dejar MatchStatus en playing/finished huérfanos. */
@@ -74,20 +116,33 @@ interface GameState {
 /** Partida limpia (status setup, sin jugadores). Usado al entrar/salir de auth y newMatch. */
 const MATCH_CLEAN: Pick<
   GameState,
-  "phase" | "status" | "players" | "activePlayerIndex" | "winnerIndex" | "aim"
+  | "phase"
+  | "status"
+  | "matchMode"
+  | "players"
+  | "activePlayerIndex"
+  | "winnerIndex"
+  | "aim"
+  | "pendingRemoteImpulse"
+  | "pendingSnapshot"
 > = {
   phase: "idle",
   status: "setup",
+  matchMode: "local",
   players: [],
   activePlayerIndex: 0,
   winnerIndex: null,
   aim: AIM_ZERO,
+  pendingRemoteImpulse: null,
+  pendingSnapshot: null,
 };
 
 export const useGameStore = create<GameState>((set) => ({
   appStage: "auth",
   ...MATCH_CLEAN,
   resetRequestId: 0,
+  remoteImpulseRequestId: 0,
+  snapshotRequestId: 0,
 
   startAiming: () =>
     set((s) => (s.status !== "playing" ? {} : { phase: "aiming", aim: AIM_ZERO })),
@@ -117,6 +172,41 @@ export const useGameStore = create<GameState>((set) => ({
         activePlayerIndex: (s.activePlayerIndex + 1) % n,
       };
     }),
+  queueRemoteImpulse: (direction, power, from) =>
+    set((s) => {
+      if (s.status !== "playing") return {};
+      const idx = s.activePlayerIndex;
+      return {
+        phase: "moving",
+        aim: AIM_ZERO,
+        remoteImpulseRequestId: s.remoteImpulseRequestId + 1,
+        pendingRemoteImpulse: { direction, power, from },
+        players: s.players.map((p, i) =>
+          i === idx
+            ? { ...p, lastPosition: from, strokes: p.strokes + 1 }
+            : p,
+        ),
+      };
+    }),
+  applySettleSnapshot: (positions, nextActiveSlot, strokes) =>
+    set((s) => {
+      if (s.status !== "playing") return {};
+      const n = s.players.length;
+      if (n === 0) return { phase: "idle" };
+      const slot = ((nextActiveSlot % n) + n) % n;
+      return {
+        phase: "idle",
+        activePlayerIndex: slot,
+        pendingRemoteImpulse: null,
+        snapshotRequestId: s.snapshotRequestId + 1,
+        pendingSnapshot: positions,
+        players: s.players.map((p, i) => ({
+          ...p,
+          lastPosition: positions[i] ?? p.lastPosition,
+          strokes: strokes?.[i] ?? p.strokes,
+        })),
+      };
+    }),
   playerFinished: (playerIndex) =>
     set((s) => {
       if (s.status !== "playing") return {};
@@ -124,6 +214,27 @@ export const useGameStore = create<GameState>((set) => ({
         status: "finished",
         winnerIndex: playerIndex,
         phase: "idle",
+      };
+    }),
+  applyOnlineFinish: (winnerIndex, strokes) =>
+    set((s) => {
+      if (s.matchMode !== "online") return {};
+      if (s.status === "finished" && s.winnerIndex === winnerIndex) {
+        return {
+          players: s.players.map((p, i) => ({
+            ...p,
+            strokes: strokes[i] ?? p.strokes,
+          })),
+        };
+      }
+      return {
+        status: "finished",
+        winnerIndex,
+        phase: "idle",
+        players: s.players.map((p, i) => ({
+          ...p,
+          strokes: strokes[i] ?? p.strokes,
+        })),
       };
     }),
   restart: () =>
@@ -134,6 +245,8 @@ export const useGameStore = create<GameState>((set) => ({
       winnerIndex: null,
       aim: AIM_ZERO,
       activePlayerIndex: 0,
+      pendingRemoteImpulse: null,
+      pendingSnapshot: null,
       players: s.players.map((p) => ({
         ...p,
         strokes: 0,
@@ -146,14 +259,19 @@ export const useGameStore = create<GameState>((set) => ({
       appStage: "setup",
       ...MATCH_CLEAN,
     }),
-  startMatch: (configs) => {
+  startMatch: (configs, options) => {
     const track = getCurrentTrack();
     const positions = computeStartPositions(track, configs.length);
+    const n = configs.length;
+    const active =
+      options?.activePlayerIndex !== undefined
+        ? ((options.activePlayerIndex % n) + n) % n
+        : 0;
     const players: Player[] = configs.map((cfg, i) => ({
-      id: `player-${i}`,
+      id: cfg.id ?? `player-${i}`,
       name: cfg.name,
       color: cfg.color,
-      strokes: 0,
+      strokes: options?.strokes?.[i] ?? 0,
       lastPosition: positions[i],
       startPosition: positions[i],
     }));
@@ -161,11 +279,14 @@ export const useGameStore = create<GameState>((set) => ({
       appStage: "match",
       phase: "idle",
       status: "playing",
+      matchMode: options?.mode ?? "local",
       players,
-      activePlayerIndex: 0,
+      activePlayerIndex: active,
       winnerIndex: null,
       aim: AIM_ZERO,
       resetRequestId: 0,
+      pendingRemoteImpulse: null,
+      pendingSnapshot: null,
     });
   },
   enterSetup: () =>
