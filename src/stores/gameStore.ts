@@ -13,10 +13,10 @@ export type GamePhase = "idle" | "aiming" | "moving";
 export type MatchStatus = "setup" | "playing" | "finished";
 
 /**
- * Capa de flujo de app por encima de MatchStatus (F02.5).
- * auth → setup → match; newMatch vuelve a setup; logoutToAuth → auth.
+ * Capa de flujo de app por encima de MatchStatus (F02.5 / F03.5).
+ * auth → mode → setup|… → match; newMatch vuelve a mode; logoutToAuth → auth.
  */
-export type AppStage = "auth" | "setup" | "match";
+export type AppStage = "auth" | "mode" | "setup" | "match";
 
 /** Hot-seat local vs partida online (F03-D). */
 export type MatchMode = "local" | "online";
@@ -94,7 +94,7 @@ interface GameState {
   applyOnlineFinish: (winnerIndex: number, strokes: number[]) => void;
   /** Reinicia con los mismos jugadores (strokes y posiciones a salida). Permanece en match. */
   restart: () => void;
-  /** Vuelve a setup para reconfigurar jugadores (no a auth). */
+  /** Tras victoria: vuelve a mode para elegir local/online (no salta a setup). */
   newMatch: () => void;
   /** Inicia partida con la configuración elegida; entra en appStage match. */
   startMatch: (
@@ -107,7 +107,16 @@ interface GameState {
       strokes?: number[];
     },
   ) => void;
-  /** Skip/login path → setup (F02.5-B). */
+  /** Post-auth / skip → pantalla de elección Local | Online (F03.5-A). */
+  enterMode: () => void;
+  /** Mode → setup local (nº jugadores / nombres / colores; atrás → enterMode). */
+  chooseLocal: () => void;
+  /**
+   * Stub F03.5-A: aún no abre lobby online (F03.5-C).
+   * No cambia appStage; ModeSelectScreen muestra feedback.
+   */
+  chooseOnline: () => void;
+  /** Entrada a setup local (uso interno / chooseLocal). */
   enterSetup: () => void;
   /** Logout path → auth; limpia partida sin dejar MatchStatus en playing/finished huérfanos. */
   logoutToAuth: () => void;
@@ -256,7 +265,7 @@ export const useGameStore = create<GameState>((set) => ({
     })),
   newMatch: () =>
     set({
-      appStage: "setup",
+      appStage: "mode",
       ...MATCH_CLEAN,
     }),
   startMatch: (configs, options) => {
@@ -288,6 +297,19 @@ export const useGameStore = create<GameState>((set) => ({
       pendingRemoteImpulse: null,
       pendingSnapshot: null,
     });
+  },
+  enterMode: () =>
+    set({
+      appStage: "mode",
+      ...MATCH_CLEAN,
+    }),
+  chooseLocal: () =>
+    set({
+      appStage: "setup",
+      ...MATCH_CLEAN,
+    }),
+  chooseOnline: () => {
+    // Stub F03.5-A: lobby online se cablea en F03.5-C (sin stage online aún).
   },
   enterSetup: () =>
     set({

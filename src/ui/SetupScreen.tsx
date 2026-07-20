@@ -23,6 +23,7 @@ function createDefaultDrafts(count: number): PlayerDraft[] {
 /** Pantalla de configuración previa a la partida (2–4 jugadores, nombre + color). */
 export function SetupScreen() {
   const startMatch = useGameStore((s) => s.startMatch);
+  const enterMode = useGameStore((s) => s.enterMode);
   const logoutToAuth = useGameStore((s) => s.logoutToAuth);
 
   const [drafts, setDrafts] = useState<PlayerDraft[]>(() =>
@@ -226,6 +227,15 @@ export function SetupScreen() {
 
         <Button type="button" className="mt-6 w-full" size="lg" onClick={handleStart}>
           Empezar
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3 w-full"
+          onClick={enterMode}
+        >
+          Volver
         </Button>
 
         {hasSession ? (

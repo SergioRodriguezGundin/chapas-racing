@@ -136,3 +136,22 @@
 - `feature_list.json`: `completed.f03_online` = A..E; F03-E `status: done`.
 - Manual QA multi-cliente (disconnect skip, reconnect F5, ranking, spoof launch) sigue pendiente humano — no bloqueó APPROVED.
 - Siguiente elegible (orden sugerido): **F07 — Leaderboards**.
+
+## F03.5 — Hub post-auth Local / Online
+
+### F03.5-A — appStage mode + pantalla Local / Online (done)
+- Modo harness (leader → implementer → reviewer → implementer cierre docs).
+- `AppStage` += `"mode"`; flujo `auth → mode → setup|… → match`. Actions `enterMode`, `chooseLocal` → setup, `chooseOnline` stub (F03.5-C).
+- `AuthEntryScreen` → `enterMode`; `ModeSelectScreen` + montaje en `page.tsx`; `newMatch` → `"mode"`; logout desde mode → auth.
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Cero deps nuevas.
+- Artefactos: `progress/impl_F03.5-A.md`, `progress/review_F03.5-A.md` (APPROVED).
+- `feature_list.json`: F03.5-A `status: done`. Siguiente elegible: **F03.5-B**.
+
+### F03.5-B — Rama local: setup jugadores (done)
+- Modo harness (leader → implementer → reviewer → implementer cierre docs).
+- CTA Local → Setup; prefill F02.5-C intacto; invitado sin prefill.
+- SetupScreen «Volver» → `enterMode` (mode); logout → `logoutToAuth` (auth).
+- `startMatch` sin `mode: "online"` → hot-seat local; física F01 intacta.
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Cero deps nuevas.
+- Artefactos: `progress/impl_F03.5-B.md`, `progress/review_F03.5-B.md` (APPROVED).
+- `feature_list.json`: F03.5-B `status: done`. Siguiente elegible: **F03.5-C**.

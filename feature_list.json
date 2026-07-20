@@ -30,7 +30,7 @@
         "pnpm tsc --noEmit y pnpm build limpios",
         "Cero dependencias nuevas"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "F03.5-B",
@@ -48,7 +48,7 @@
         "pnpm tsc --noEmit y pnpm build limpios",
         "Cero dependencias nuevas"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "F03.5-C",

@@ -6,6 +6,7 @@ import { useGameStore } from "@/stores/gameStore";
 import { AuthEntryScreen } from "@/ui/AuthEntryScreen";
 import { AuthNav } from "@/ui/AuthNav";
 import { Hud } from "@/ui/Hud";
+import { ModeSelectScreen } from "@/ui/ModeSelectScreen";
 import { SetupScreen } from "@/ui/SetupScreen";
 import { VictoryModal } from "@/ui/VictoryModal";
 
@@ -30,6 +31,7 @@ export default function Home() {
       {appStage !== "auth" && <AuthNav />}
       <GameCanvas />
       {appStage === "auth" && <AuthEntryScreen />}
+      {appStage === "mode" && <ModeSelectScreen />}
       {appStage === "setup" && <SetupScreen />}
       {appStage === "match" && <Hud />}
       {appStage === "match" && <VictoryModal />}
