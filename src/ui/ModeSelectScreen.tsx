@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useGameStore } from "@/stores/gameStore";
 
-/** Pantalla post-auth: elegir partida local u online (F03.5-A). */
+/** Pantalla post-auth: elegir partida local u online (F03.5-A/C). */
 export function ModeSelectScreen() {
   const chooseLocal = useGameStore((s) => s.chooseLocal);
   const chooseOnline = useGameStore((s) => s.chooseOnline);
@@ -14,7 +14,6 @@ export function ModeSelectScreen() {
 
   const [hasSession, setHasSession] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [onlineHint, setOnlineHint] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -35,12 +34,6 @@ export function ModeSelectScreen() {
       subscription.unsubscribe();
     };
   }, []);
-
-  const handleOnline = () => {
-    chooseOnline();
-    // Stub F03.5-A: F03.5-C cableará lobby en home.
-    setOnlineHint("Modo online próximamente. Usa «Jugar en local» por ahora.");
-  };
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -70,16 +63,27 @@ export function ModeSelectScreen() {
             variant="outline"
             className="w-full"
             size="lg"
-            onClick={handleOnline}
+            disabled={!hasSession}
+            onClick={chooseOnline}
           >
             Jugar online
           </Button>
         </div>
 
-        {onlineHint ? (
-          <p className="mt-3 text-center text-sm text-muted-foreground" role="status">
-            {onlineHint}
-          </p>
+        {!hasSession ? (
+          <div className="mt-3 space-y-2 text-center">
+            <p className="text-sm text-muted-foreground" role="status">
+              Inicia sesión para jugar online
+            </p>
+            <Button
+              type="button"
+              variant="link"
+              className="h-auto p-0 text-sm"
+              onClick={logoutToAuth}
+            >
+              Ir a iniciar sesión
+            </Button>
+          </div>
         ) : null}
 
         {hasSession ? (

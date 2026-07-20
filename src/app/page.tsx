@@ -7,6 +7,7 @@ import { AuthEntryScreen } from "@/ui/AuthEntryScreen";
 import { AuthNav } from "@/ui/AuthNav";
 import { Hud } from "@/ui/Hud";
 import { ModeSelectScreen } from "@/ui/ModeSelectScreen";
+import { OnlineLobby } from "@/ui/OnlineLobby";
 import { SetupScreen } from "@/ui/SetupScreen";
 import { VictoryModal } from "@/ui/VictoryModal";
 
@@ -25,6 +26,11 @@ const GameCanvas = dynamic(
 
 export default function Home() {
   const appStage = useGameStore((s) => s.appStage);
+  const matchMode = useGameStore((s) => s.matchMode);
+
+  const showOnlineLobby =
+    appStage === "online" || (appStage === "match" && matchMode === "online");
+  const showLocalMatchUi = appStage === "match" && matchMode !== "online";
 
   return (
     <main className="fixed inset-0">
@@ -33,8 +39,9 @@ export default function Home() {
       {appStage === "auth" && <AuthEntryScreen />}
       {appStage === "mode" && <ModeSelectScreen />}
       {appStage === "setup" && <SetupScreen />}
-      {appStage === "match" && <Hud />}
-      {appStage === "match" && <VictoryModal />}
+      {showOnlineLobby && <OnlineLobby embedded />}
+      {showLocalMatchUi && <Hud />}
+      {showLocalMatchUi && <VictoryModal />}
     </main>
   );
 }

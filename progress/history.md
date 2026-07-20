@@ -155,3 +155,16 @@
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Cero deps nuevas.
 - Artefactos: `progress/impl_F03.5-B.md`, `progress/review_F03.5-B.md` (APPROVED).
 - `feature_list.json`: F03.5-B `status: done`. Siguiente elegible: **F03.5-C**.
+
+### F03.5-C — Rama online: lobby en hub (done)
+- Modo harness (leader → implementer → reviewer → implementer cierre docs).
+- `AppStage` += `"online"`; `chooseOnline` → lobby en hub (`OnlineLobby embedded`); gate sesión en ModeSelect.
+- Leave / Volver / `newMatch` → mode; unmount `leave_room` si mode/auth; `/online` bridge → hub.
+- Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Cero deps nuevas.
+- Artefactos: `progress/impl_F03.5-C.md`, `progress/review_F03.5-C.md` (APPROVED).
+- `feature_list.json`: F03.5-C `status: done`. Siguiente elegible: **F07 — Leaderboards**.
+
+### Feature F03.5 completa (done)
+- Subtareas A–C cerradas. Hub post-auth Local | Online integrado.
+- `feature_list.json`: `completed.f03_5_hub` = A..C; description → F03.5 completo; siguiente **F07**.
+- Manual QA multi-cliente (create/join/start/leave) sigue pendiente humano — no bloqueó APPROVED.

@@ -104,7 +104,7 @@ export function VictoryModal() {
         <DialogFooter className="flex-col gap-2 sm:flex-col sm:justify-center">
           {isOnline ? (
             <Button type="button" className="w-full" onClick={newMatch}>
-              Salir al lobby
+              Volver al menú
             </Button>
           ) : (
             <>

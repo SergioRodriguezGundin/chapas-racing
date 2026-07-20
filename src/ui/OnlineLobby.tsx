@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 
@@ -238,8 +237,8 @@ async function findActiveMembershipForReconnect(
   return active;
 }
 
-/** UI /online: lobby create/join + partida online (F03-D). */
-export function OnlineLobby() {
+/** Lobby create/join + partida online (F03-D). `embedded`: overlay en hub `/`. */
+export function OnlineLobby({ embedded = false }: { embedded?: boolean }) {
   const supabaseRef = useRef(createClient());
   const channelRef = useRef<RealtimeChannel | null>(null);
   const lobbyMetaRef = useRef<{ roomId: string; userId: string } | null>(null);
@@ -261,10 +260,14 @@ export function OnlineLobby() {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const appStage = useGameStore((s) => s.appStage);
   const matchStatus = useGameStore((s) => s.status);
   const winnerIndex = useGameStore((s) => s.winnerIndex);
   const matchMode = useGameStore((s) => s.matchMode);
+  const enterMode = useGameStore((s) => s.enterMode);
+
+  const shellClassName = embedded
+    ? "absolute inset-0 z-10 flex items-center justify-center bg-background/90 p-4 backdrop-blur-sm"
+    : "flex min-h-full items-center justify-center bg-background p-4";
 
   membersRef.current = members;
   presenceIdsRef.current = presenceIds;
@@ -498,7 +501,8 @@ export function OnlineLobby() {
     })();
   }, []);
 
-  // Unmount: Presence off + connected=false; membership se conserva para reconnect.
+  // Unmount: Presence off; leave_room solo si ya volvimos a mode/auth (newMatch / salir).
+  // Unmount con sesión online activa conserva membership para reconnect.
   useEffect(() => {
     return () => {
       const meta = lobbyMetaRef.current;
@@ -507,7 +511,13 @@ export function OnlineLobby() {
       channelRef.current = null;
       clearOnlineSession();
       matchStartedRef.current = false;
-      if (meta) {
+
+      const stage = useGameStore.getState().appStage;
+      if (meta && (stage === "mode" || stage === "auth")) {
+        void supabaseRef.current.rpc("leave_room", {
+          p_room_id: meta.roomId,
+        });
+      } else if (meta) {
         void markMemberPresence(
           supabaseRef.current,
           meta.roomId,
@@ -587,28 +597,7 @@ export function OnlineLobby() {
     void reportOnlineFinish(winnerIndex);
   }, [view.kind, matchMode, matchStatus, winnerIndex]);
 
-  // VictoryModal «Salir al lobby» → newMatch() limpia store; volver a entry
-  useEffect(() => {
-    if (view.kind !== "match") return;
-    if (appStage !== "setup") return;
-
-    const meta = lobbyMetaRef.current;
-    lobbyMetaRef.current = null;
-    clearOnlineSession();
-    matchStartedRef.current = false;
-
-    void (async () => {
-      if (meta) {
-        await supabaseRef.current.rpc("leave_room", {
-          p_room_id: meta.roomId,
-        });
-      }
-      await teardownChannel();
-      setMembers([]);
-      setPresenceIds(new Set());
-      setView({ kind: "entry" });
-    })();
-  }, [view.kind, appStage]);
+  // newMatch → mode: el hub desmonta OnlineLobby; unmount hace leave_room (stage mode/auth).
 
   const handleCreate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -755,7 +744,7 @@ export function OnlineLobby() {
       await teardownChannel();
       setMembers([]);
       setPresenceIds(new Set());
-      setView({ kind: "entry" });
+      enterMode();
     } finally {
       setBusy(false);
     }
@@ -772,9 +761,8 @@ export function OnlineLobby() {
   };
 
   if (view.kind === "match") {
-    return (
-      <main className="fixed inset-0">
-        <GameCanvas />
+    const matchChrome = (
+      <>
         <Hud />
         <VictoryModal />
         <div className="pointer-events-none absolute right-4 top-4 select-none">
@@ -782,6 +770,18 @@ export function OnlineLobby() {
             Sala {view.room.code}
           </p>
         </div>
+      </>
+    );
+
+    // Hub ya monta GameCanvas; embedded reutiliza el del padre.
+    if (embedded) {
+      return matchChrome;
+    }
+
+    return (
+      <main className="fixed inset-0">
+        <GameCanvas />
+        {matchChrome}
       </main>
     );
   }
@@ -793,7 +793,7 @@ export function OnlineLobby() {
       isHost && members.length >= ONLINE.minPlayersToStart && !busy;
 
     return (
-      <div className="flex min-h-full items-center justify-center bg-background p-4">
+      <div className={shellClassName}>
         <div className="w-full max-w-md rounded-lg border border-border bg-popover p-6 shadow-lg">
           <header className="mb-6 text-center">
             <h1 className="font-heading text-2xl text-primary">Lobby</h1>
@@ -920,13 +920,16 @@ export function OnlineLobby() {
             Salir del lobby
           </Button>
 
-          <p className="mt-4 text-center text-sm">
-            <Link
-              href="/"
-              className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          <p className="mt-4 text-center">
+            <Button
+              type="button"
+              variant="link"
+              className="h-auto p-0 text-sm text-muted-foreground"
+              disabled={busy}
+              onClick={enterMode}
             >
-              Volver al hot-seat
-            </Link>
+              Volver al menú
+            </Button>
           </p>
         </div>
       </div>
@@ -934,7 +937,7 @@ export function OnlineLobby() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-background p-4">
+    <div className={shellClassName}>
       <div className="w-full max-w-md rounded-lg border border-border bg-popover p-6 shadow-lg">
         <header className="mb-6 text-center">
           <h1 className="font-heading text-2xl text-primary">Partidas online</h1>
@@ -1067,13 +1070,15 @@ export function OnlineLobby() {
           </form>
         )}
 
-        <p className="mt-6 text-center text-sm">
-          <Link
-            href="/"
-            className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        <p className="mt-6 text-center">
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0 text-sm text-muted-foreground"
+            onClick={enterMode}
           >
-            Volver al hot-seat
-          </Link>
+            Volver al menú
+          </Button>
         </p>
       </div>
     </div>

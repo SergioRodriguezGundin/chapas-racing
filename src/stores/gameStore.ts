@@ -14,9 +14,9 @@ export type MatchStatus = "setup" | "playing" | "finished";
 
 /**
  * Capa de flujo de app por encima de MatchStatus (F02.5 / F03.5).
- * auth → mode → setup|… → match; newMatch vuelve a mode; logoutToAuth → auth.
+ * auth → mode → setup|online → match; newMatch / salir online → mode; logoutToAuth → auth.
  */
-export type AppStage = "auth" | "mode" | "setup" | "match";
+export type AppStage = "auth" | "mode" | "setup" | "online" | "match";
 
 /** Hot-seat local vs partida online (F03-D). */
 export type MatchMode = "local" | "online";
@@ -111,10 +111,7 @@ interface GameState {
   enterMode: () => void;
   /** Mode → setup local (nº jugadores / nombres / colores; atrás → enterMode). */
   chooseLocal: () => void;
-  /**
-   * Stub F03.5-A: aún no abre lobby online (F03.5-C).
-   * No cambia appStage; ModeSelectScreen muestra feedback.
-   */
+  /** Mode → lobby online (crear/unirse); requiere sesión (gate en UI). */
   chooseOnline: () => void;
   /** Entrada a setup local (uso interno / chooseLocal). */
   enterSetup: () => void;
@@ -308,9 +305,11 @@ export const useGameStore = create<GameState>((set) => ({
       appStage: "setup",
       ...MATCH_CLEAN,
     }),
-  chooseOnline: () => {
-    // Stub F03.5-A: lobby online se cablea en F03.5-C (sin stage online aún).
-  },
+  chooseOnline: () =>
+    set({
+      appStage: "online",
+      ...MATCH_CLEAN,
+    }),
   enterSetup: () =>
     set({
       appStage: "setup",
