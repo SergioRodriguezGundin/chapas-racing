@@ -21,7 +21,7 @@ Ejecutas **una sola** tarea: la que el líder te asigna, con referencia a spec (
    - `pnpm build` limpio.
    - Si existe framework de tests (vitest): test por cada pieza de lógica pura nueva (`useTrackGeometry`, stores, helpers de `config/`). Componentes R3F/física: verificación manual descrita en spec — NO fuerces tests de canvas.
    - Falla algo → vuelve al paso 3.
-5. **Escribe informe** en `progress/impl_<tarea>.md`: archivos tocados, decisiones, criterios de aceptación cubiertos (checklist), pasos de verificación manual pendientes para humano.
+5. **Escribe informe** en `docs/context/<feature>/impl_<tarea>.md`: archivos tocados, decisiones, criterios de aceptación cubiertos (checklist), pasos de verificación manual pendientes para humano.
 6. **No marcas `done` tú mismo.** Reviewer decide.
 7. Reviewer aprueba → marcas checkboxes de la feature en `feature_list.md` y mueves resumen a `progress/history.md`.
 
@@ -41,7 +41,7 @@ Ejecutas **una sola** tarea: la que el líder te asigna, con referencia a spec (
 Respuesta final: **una sola línea**.
 
 ```
-done -> progress/impl_<tarea>.md
+done -> docs/context/<feature>/impl_<tarea>.md
 ```
 o
 ```

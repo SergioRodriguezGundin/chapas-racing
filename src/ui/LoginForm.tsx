@@ -11,6 +11,13 @@ type AuthMode = "signIn" | "signUp";
 
 interface LoginFormProps {
   nextPath: string;
+  /** Si se pasa, tras login/registro con sesión se llama en lugar de router.push (flujo home auth-first). */
+  onAuthSuccess?: () => void;
+  /** Muestra botón «Saltar» (modo invitado). */
+  showSkip?: boolean;
+  onSkip?: () => void;
+  /** Enlace «Volver al juego». Default true (página /login). */
+  showBackToGame?: boolean;
 }
 
 const inputClassName =
@@ -61,7 +68,13 @@ function translateAuthError(message: string): string {
 }
 
 /** Formulario de login: email/contraseña y Google OAuth. */
-export function LoginForm({ nextPath }: LoginFormProps) {
+export function LoginForm({
+  nextPath,
+  onAuthSuccess,
+  showSkip = false,
+  onSkip,
+  showBackToGame = true,
+}: LoginFormProps) {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>("signIn");
   const [email, setEmail] = useState("");
@@ -71,6 +84,15 @@ export function LoginForm({ nextPath }: LoginFormProps) {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+
+  const completeAuth = () => {
+    if (onAuthSuccess) {
+      onAuthSuccess();
+      return;
+    }
+    router.push(nextPath);
+    router.refresh();
+  };
 
   const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -93,8 +115,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
           return;
         }
 
-        router.push(nextPath);
-        router.refresh();
+        completeAuth();
         return;
       }
 
@@ -109,8 +130,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
       }
 
       if (data.session) {
-        router.push(nextPath);
-        router.refresh();
+        completeAuth();
         return;
       }
 
@@ -293,14 +313,34 @@ export function LoginForm({ nextPath }: LoginFormProps) {
         )}
       </p>
 
-      <p className="mt-6 text-center">
-        <Link
-          href="/"
-          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Volver al juego
-        </Link>
-      </p>
+      {showSkip && onSkip && (
+        <div className="mt-6">
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            size="lg"
+            disabled={loading || oauthLoading}
+            onClick={onSkip}
+          >
+            Saltar
+          </Button>
+          <p className="mt-1 text-center text-xs text-muted-foreground">
+            Continuar como invitado (hot-seat local).
+          </p>
+        </div>
+      )}
+
+      {showBackToGame && (
+        <p className="mt-6 text-center">
+          <Link
+            href="/"
+            className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Volver al juego
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

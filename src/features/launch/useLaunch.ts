@@ -4,8 +4,14 @@ import { useCallback, useEffect, useRef } from "react";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
 import type { RapierRigidBody } from "@react-three/rapier";
 import * as THREE from "three";
-import { useGameStore } from "@/stores/gameStore";
+
 import { LAUNCH } from "@/config/physics";
+import {
+  broadcastLocalLaunch,
+  canLocalPlayerAim,
+  submitRoomLaunch,
+} from "@/features/online/onlineSession";
+import { useGameStore } from "@/stores/gameStore";
 
 /** Plano y=0 sobre el que se proyecta el puntero */
 const GROUND_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -18,8 +24,7 @@ const GROUND_PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
  *    -> potencia = |arrastre| / maxDragDistance, clamp 0..1
  * 3. pointerup -> potencia >= minLaunchPower ? applyImpulse : cancelar
  *
- * Listeners en window (no en mesh): el drag sale del mesh inmediatamente.
- * Pointer Events -> ratón y táctil cubiertos.
+ * Online: RPC submit_room_launch antes de impulso + Broadcast (autoridad server).
  */
 export function useLaunch(
   bodyRef: React.RefObject<RapierRigidBody | null>,
@@ -28,6 +33,7 @@ export function useLaunch(
   const { camera, gl } = useThree();
   const raycaster = useRef(new THREE.Raycaster());
   const dragOrigin = useRef(new THREE.Vector3());
+  const submittingRef = useRef(false);
   const phase = useGameStore((s) => s.phase);
   const activePlayerIndex = useGameStore((s) => s.activePlayerIndex);
 
@@ -55,6 +61,7 @@ export function useLaunch(
       if (state.status !== "playing") return;
       if (state.phase !== "idle") return;
       if (state.activePlayerIndex !== playerIndex) return;
+      if (!canLocalPlayerAim(playerIndex)) return;
       const body = bodyRef.current;
       if (!body) return;
       e.stopPropagation();
@@ -68,8 +75,10 @@ export function useLaunch(
 
   useEffect(() => {
     if (phase !== "aiming" || playerIndex !== activePlayerIndex) return;
+    if (!canLocalPlayerAim(playerIndex)) return;
 
     const handleMove = (e: PointerEvent) => {
+      if (submittingRef.current) return;
       const hit = pointToGround(e.clientX, e.clientY);
       if (!hit) return;
 
@@ -84,6 +93,8 @@ export function useLaunch(
     };
 
     const handleUp = () => {
+      if (submittingRef.current) return;
+
       const { aim, cancelAim, launch } = useGameStore.getState();
       const body = bodyRef.current;
 
@@ -93,17 +104,50 @@ export function useLaunch(
       }
 
       const t = body.translation();
-      launch([t.x, t.y, t.z]);
+      const from: [number, number, number] = [t.x, t.y, t.z];
+      const direction = aim.direction;
+      const power = aim.power;
 
-      body.wakeUp();
-      body.applyImpulse(
-        {
-          x: aim.direction[0] * aim.power * LAUNCH.maxImpulse,
-          y: 0,
-          z: aim.direction[2] * aim.power * LAUNCH.maxImpulse,
-        },
-        true,
-      );
+      submittingRef.current = true;
+      void (async () => {
+        try {
+          const accepted = await submitRoomLaunch(direction, power, from);
+          if (!accepted) {
+            useGameStore.getState().cancelAim();
+            return;
+          }
+
+          const state = useGameStore.getState();
+          if (
+            state.phase !== "aiming" ||
+            state.activePlayerIndex !== playerIndex ||
+            state.status !== "playing"
+          ) {
+            state.cancelAim();
+            return;
+          }
+
+          const liveBody = bodyRef.current;
+          if (!liveBody) {
+            state.cancelAim();
+            return;
+          }
+
+          launch(from);
+          liveBody.wakeUp();
+          liveBody.applyImpulse(
+            {
+              x: direction[0] * power * LAUNCH.maxImpulse,
+              y: 0,
+              z: direction[2] * power * LAUNCH.maxImpulse,
+            },
+            true,
+          );
+          broadcastLocalLaunch(direction, power, from);
+        } finally {
+          submittingRef.current = false;
+        }
+      })();
     };
 
     window.addEventListener("pointermove", handleMove);

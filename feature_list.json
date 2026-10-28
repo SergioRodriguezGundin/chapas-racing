@@ -1,6 +1,6 @@
 {
   "project": "chapas-racing",
-  "description": "Roadmap activo de implementación. Completado: iteración 2 (features 1–8), F01 hot-seat (BUG-01..03), F02 auth/perfil Supabase (F02-A..E). Bitácora: progress/history.md. Añadir aquí la siguiente iteración (p. ej. F03 online) cuando exista spec en specs/.",
+  "description": "Roadmap activo. Completado: iter2, F01, F02, F02.5, F03 (A–E), F03.5 (A–C hub Local/Online). Siguiente elegible: F07 leaderboards (orden sugerido). Bitácora: progress/history.md.",
   "rules": {
     "one_feature_at_a_time": true,
     "require_typecheck_and_build_to_close": true,
@@ -9,9 +9,80 @@
   "completed": {
     "iteration_2": ["1", "2", "3", "4", "5", "6", "7", "8"],
     "f01_hot_seat": ["BUG-01", "BUG-02", "BUG-03"],
-    "f02_auth_profile": ["F02-A", "F02-B", "F02-C", "F02-D", "F02-E"]
+    "f02_auth_profile": ["F02-A", "F02-B", "F02-C", "F02-D", "F02-E"],
+    "f02_5_auth_first": ["F02.5-A", "F02.5-B", "F02.5-C"],
+    "f03_online": ["F03-A", "F03-B", "F03-C", "F03-D", "F03-E"],
+    "f03_5_hub": ["F03.5-A", "F03.5-B", "F03.5-C"]
   },
-  "features": [],
-  "suggested_order": [],
-  "dependency_graph": {}
+  "features": [
+    {
+      "id": "F03.5-A",
+      "name": "mode_select_stage",
+      "title": "F03.5-A — appStage mode + pantalla Local / Online",
+      "description": "Tras auth (login, sesión persistida o Saltar), insertar pantalla de elección de modo ANTES del setup de jugadores. Extender AppStage con 'mode' (flujo: auth → mode → setup|online → match). Pantalla fullscreen con dos opciones: «Jugar en local» y «Jugar online». Sin cablear aún las ramas completas de setup/lobby — solo stage, UI de elección y transiciones enterMode / chooseLocal / chooseOnline (stubs o navegación mínima). Spec implícita: hub post-auth; reutiliza F02.5 + F03.",
+      "depends_on": [],
+      "blocks": ["F03.5-B", "F03.5-C"],
+      "acceptance": [
+        "AppStage incluye 'mode' entre 'auth' y los flujos de partida (setup local / online)",
+        "Tras login exitoso, sesión ya activa al abrir, o Saltar → appStage 'mode' (ya no se salta directo a setup)",
+        "Pantalla mode: dos CTAs claros — «Jugar en local» y «Jugar online»",
+        "page.tsx (home /) monta ModeSelectScreen cuando appStage === 'mode'; no muestra SetupScreen ni lobby online en ese stage",
+        "logoutToAuth desde mode (si hay control) vuelve a 'auth'; newMatch no debe saltarse 'mode' sin decisión documentada",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero dependencias nuevas"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F03.5-B",
+      "name": "local_branch_setup",
+      "title": "F03.5-B — Rama local: setup jugadores (nombre/color/nº)",
+      "description": "«Jugar en local» → appStage 'setup' con el flujo F01/F02.5 existente: nº jugadores 2–4, nombre + color de chapa, prefill Jugador 1 si hay sesión. Desde SetupScreen, volver a mode (no a auth) salvo logout. Invitado (session null) puede usar local con normalidad. Hot-seat matchMode local intacto.",
+      "depends_on": ["F03.5-A"],
+      "blocks": ["F03.5-C"],
+      "acceptance": [
+        "CTA «Jugar en local» → SetupScreen (nº jugadores, nombres, colores)",
+        "Con sesión: Jugador 1 pre-rellenado (display_name + cap_color → PLAYER_COLORS) como F02.5-C",
+        "Sin sesión (Saltar): setup usable sin prefill",
+        "Iniciar partida local → match hot-seat; física/turnos F01 sin cambios",
+        "Navegación atrás desde setup → mode (no auth); logout → auth",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero dependencias nuevas"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "F03.5-C",
+      "name": "online_branch_lobby_home",
+      "title": "F03.5-C — Rama online: crear/unirse en el hub (reutilizar F03)",
+      "description": "«Jugar online» desde mode → UI de crear sala / unirse por código / lobby (reutilizar OnlineLobby y RPCs F03; no reimplementar sync). Integrar en el flujo de `/` (appStage online o montaje condicional), no como único entry en `/online`. Sesión obligatoria: invitado que pulse Online → login o CTA deshabilitado con mensaje. Código de sala visible/compartible al crear. `/online` puede redirigir al hub o montar el mismo flujo. newMatch / salir de victoria online → mode o lobby según decisión documentada (preferencia: volver a mode).",
+      "depends_on": ["F03.5-A", "F03.5-B"],
+      "blocks": [],
+      "acceptance": [
+        "CTA «Jugar online» con sesión → crear sala o unirse por código (mismo comportamiento F03-C)",
+        "Crear sala genera código corto visible/compartible; unirse con código válido entra al lobby",
+        "Lobby + start + partida online siguen usando stack F03 (Realtime, launch/settle) sin regresiones",
+        "Sin sesión: Online no entra al lobby anónimo (pide login o deshabilita con mensaje claro)",
+        "Flujo principal en `/` (hub); `/online` no es el único camino o redirige coherentemente",
+        "Salir de lobby / fin de partida online vuelve a mode (o ruta documentada equivalente), no al setup local",
+        "pnpm tsc --noEmit y pnpm build limpios",
+        "Cero dependencias nuevas"
+      ],
+      "status": "done"
+    }
+  ],
+  "suggested_order": ["F03.5-A", "F03.5-B", "F03.5-C"],
+  "dependency_graph": {
+    "F03.5-A": [],
+    "F03.5-B": ["F03.5-A"],
+    "F03.5-C": ["F03.5-A", "F03.5-B"]
+  },
+  "flow": {
+    "summary": "auth → mode (Local | Online) → (local: setup → match) | (online: create/join lobby → match)",
+    "notes": [
+      "F03 backend/sync ya done; F03.5 solo reordena UX de entrada en home",
+      "Invitado: Local sí; Online requiere sesión",
+      "Reutilizar OnlineLobby / RPCs; no duplicar lógica de salas"
+    ]
+  }
 }
