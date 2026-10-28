@@ -24,8 +24,7 @@
 | `progress/impl_*.md`, `review_*.md`, `research_*.md` | Informes de subagentes | Si continúas trabajo previo |
 | `docs/architecture.md` | Qué significa "buen trabajo": capas, principios, anti-patrones | Antes de implementar |
 | `docs/conventions.md` | Estilo, nombres, patrones repo | Antes de escribir código |
-| `docs/verification.md` | Niveles de evidencia para declarar `done` | Antes de cerrar tarea |
-| `CHECKPOINTS.md` | Criterios objetivos de estado final sano | Auto-evaluación / cierre |
+| `docs/verification.md` | Niveles de evidencia para declarar `done` + checklist de estado final | Antes de cerrar tarea / sesión |
 | `.claude/agents/` | Subagentes: leader, implementer, reviewer | Si orquestas trabajo |
 | `src/config/` | Constantes física/gameplay — único punto tuning | Al tocar comportamiento |
 | `src/stores/` | Estado dominio (zustand) | Al tocar lógica de juego |
