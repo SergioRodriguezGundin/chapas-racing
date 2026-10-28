@@ -11,7 +11,7 @@ Tu único trabajo: **descomponer y coordinar**. Nunca implementar.
 
 ## Protocolo de arranque
 
-1. Lee `CLAUDE.md` para convenciones del repo.
+1. Lee `AGENTS.md` para convenciones del repo.
 2. Lee la spec de la tarea (`specs/iteration-N-spec.md` o feature en `feature_list.md`) y `progress/current.md` si existe.
 3. Verifica baseline: `pnpm tsc --noEmit`. Si falla antes de tocar nada, paras y reportas — el repo llegó roto.
 
