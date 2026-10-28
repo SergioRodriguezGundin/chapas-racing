@@ -10,7 +10,7 @@
 
 1. `pnpm install && pnpm tsc --noEmit` -> sin errores. Falla -> **para**, resuelve entorno antes de tocar código.
 2. Lee `progress/current.md` -> estado de última sesión.
-3. Identifica tu tarea: asignada por líder (referencia a spec) o, si trabajas solo, elige UNA feature de `feature_list.md` (ver §5). Nunca más de una.
+3. Identifica tu tarea: asignada por líder (referencia a spec) o, si trabajas solo, elige UNA feature de `feature_list.md`. Nunca más de una.
 
 ## 2. Mapa del repositorio
 
@@ -35,7 +35,7 @@
 - **Una feature/tarea a la vez.** Cero mezcla de cambios en misma sesión.
 - **Nada `done` sin verificación verde**: `pnpm tsc --noEmit && pnpm build` (+ `pnpm vitest run` si existe).
 - **Documenta MIENTRAS trabajas** en `progress/current.md`, no al final.
-- **Repo limpio antes de cerrar** (§6).
+- **Repo limpio antes de cerrar** (§5).
 - **Duda -> `docs/`** antes de inventar.
 - **Cero deps nuevas** sin discusión (`blocked`).
 - **Constantes física/gameplay -> `config/physics.ts`.** Cero números mágicos inline.
@@ -68,18 +68,7 @@ Subagentes: `implementer` (código de UNA tarea), `reviewer` (valida antes de ce
 - Preguntas conceptuales / lectura del repo -> respuesta directa.
 - Cambios fuera de `src/` (docs, specs, `progress/`, config repo) -> editas tú en cualquier modo, también como líder.
 
-## 5. Cómo elegir tarea (solo si trabajas sin líder)
-
-```
-1. Abre feature_list.md
-2. Descarta features con checkboxes completos o dependencias incumplidas (ver grafo al final del archivo)
-3. Coge la primera elegible en orden sugerido
-4. Anota en progress/current.md: feature, plan breve (3-5 bullets)
-```
-
-Líder te asignó tarea -> saltas esto: su referencia (spec/feature) manda.
-
-## 6. Cierre de sesión (lifecycle)
+## 5. Cierre de sesión (lifecycle)
 
 1. `pnpm tsc --noEmit && pnpm build` — verde.
 2. Tarea acabada + review APPROVED -> marca checkboxes en `feature_list.md`.
@@ -87,7 +76,7 @@ Líder te asignó tarea -> saltas esto: su referencia (spec/feature) manda.
 4. Vacía `progress/current.md` (solo plantilla).
 5. Cero temporales, cero `console.log` debug, cero TODOs sin contexto.
 
-## 7. Si te bloqueas
+## 6. Si te bloqueas
 
 - Relee sección relevante de `docs/`.
 - Herramienta no hace lo esperado -> **NO inventes workaround**: documenta bloqueo en `progress/current.md` estado `blocked`, para sesión.
