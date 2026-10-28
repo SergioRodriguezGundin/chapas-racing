@@ -10,13 +10,12 @@
 
 1. `pnpm install && pnpm tsc --noEmit` -> sin errores. Falla -> **para**, resuelve entorno antes de tocar código.
 2. Lee `progress/current.md` -> estado de última sesión.
-3. Identifica tu tarea: asignada por líder (referencia a spec) o, si trabajas solo, elige UNA feature de `feature_list.md` (ver §4). Nunca más de una.
+3. Identifica tu tarea: asignada por líder (referencia a spec) o, si trabajas solo, elige UNA feature de `feature_list.md`. Nunca más de una.
 
 ## 2. Mapa del repositorio
 
 | Archivo / carpeta | Contiene | Cuándo leer |
 |---|---|---|
-| `CLAUDE.md` | Modos de trabajo (ligero/harness) para Claude Code | Si eres Claude Code |
 | `feature_list.md` | Roadmap F01–F12: descripción + criterios aceptación + dependencias | Siempre, al empezar |
 | `specs/*.md` | Spec detallada de iteración en curso | Si tu tarea la referencia |
 | `progress/current.md` | Estado de sesión actual | Siempre, al empezar |
@@ -24,8 +23,7 @@
 | `progress/impl_*.md`, `review_*.md`, `research_*.md` | Informes de subagentes | Si continúas trabajo previo |
 | `docs/architecture.md` | Qué significa "buen trabajo": capas, principios, anti-patrones | Antes de implementar |
 | `docs/conventions.md` | Estilo, nombres, patrones repo | Antes de escribir código |
-| `docs/verification.md` | Niveles de evidencia para declarar `done` | Antes de cerrar tarea |
-| `CHECKPOINTS.md` | Criterios objetivos de estado final sano | Auto-evaluación / cierre |
+| `docs/verification.md` | Niveles de evidencia para declarar `done` + checklist de estado final | Antes de cerrar tarea / sesión |
 | `.claude/agents/` | Subagentes: leader, implementer, reviewer | Si orquestas trabajo |
 | `src/config/` | Constantes física/gameplay — único punto tuning | Al tocar comportamiento |
 | `src/stores/` | Estado dominio (zustand) | Al tocar lógica de juego |
@@ -40,18 +38,35 @@
 - **Repo limpio antes de cerrar** (§5).
 - **Duda -> `docs/`** antes de inventar.
 - **Cero deps nuevas** sin discusión (`blocked`).
+- **Constantes física/gameplay -> `config/physics.ts`.** Cero números mágicos inline.
 - **pnpm siempre.** Nunca npm/yarn.
 
-## 4. Cómo elegir tarea (solo si trabajas sin líder)
+## 4. Modos de trabajo
 
-```
-1. Abre feature_list.md
-2. Descarta features con checkboxes completos o dependencias incumplidas (ver grafo al final del archivo)
-3. Coge la primera elegible en orden sugerido
-4. Anota en progress/current.md: feature, plan breve (3-5 bullets)
-```
+### Modo ligero (default)
 
-Líder te asignó tarea -> saltas esto: su referencia (spec/feature) manda.
+Tareas acotadas: fix, tuning `config/physics.ts`, componente aislado, ajuste de spec, docs.
+
+- Implementas tú directamente.
+- Obligatorio igualmente: `docs/conventions.md` + verificación (`docs/verification.md`).
+- TDD si lógica pura: test antes de impl.
+
+### Modo harness (orquestación)
+
+Actúas como `leader` (`.claude/agents/leader.md`): descompones y coordinas, **nunca implementas**. Protocolo, escalado y regla anti-teléfono-descompuesto en ese archivo.
+
+Activa si se cumple cualquiera:
+- Feature completa de `feature_list.md` (F01–F12).
+- Spec multi-dominio: toca 3+ de {stores, física, UI, schema JSON, backend}.
+- Refactor cruzado entre features.
+- Investigación previa necesaria (API rapier/fiber dudosa).
+
+Subagentes: `implementer` (código de UNA tarea), `reviewer` (valida antes de cerrar), `explorer` = tipo `general-purpose` (1-2 en paralelo, pregunta acotada).
+
+### Sin modo especial
+
+- Preguntas conceptuales / lectura del repo -> respuesta directa.
+- Cambios fuera de `src/` (docs, specs, `progress/`, config repo) -> editas tú en cualquier modo, también como líder.
 
 ## 5. Cierre de sesión (lifecycle)
 

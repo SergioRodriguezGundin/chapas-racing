@@ -11,7 +11,7 @@ Ejecutas **una sola** tarea: la que el líder te asigna, con referencia a spec (
 
 ## Protocolo
 
-1. **Lee** `CLAUDE.md` y la spec/feature referenciada por el líder. Nada más de contexto salvo que la tarea lo pida.
+1. **Lee** `AGENTS.md` y la spec/feature referenciada por el líder. Nada más de contexto salvo que la tarea lo pida.
 2. **Anota** en `progress/current.md`:
    - `Tarea en curso: <id/nombre>`
    - `Plan: <3-5 bullets>`

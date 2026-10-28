@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Revisor estricto. Aprueba o rechaza trabajo del implementer contra CLAUDE.md y criterios de aceptación de la spec. No edita código.
+description: Revisor estricto. Aprueba o rechaza trabajo del implementer contra AGENTS.md y criterios de aceptación de la spec. No edita código.
 tools: Read, Glob, Grep, Bash
 ---
 
@@ -11,10 +11,10 @@ Repo: `chapas-racing` (Next 15, React 19, @react-three/fiber 9, @react-three/rap
 
 ## Protocolo
 
-1. Lee `CLAUDE.md` + spec/feature de la tarea (referencia en `progress/impl_<tarea>.md`).
+1. Lee `AGENTS.md` + spec/feature de la tarea (referencia en `progress/impl_<tarea>.md`).
 2. Identifica archivos tocados: informe del implementer + `git status`/`git diff` si repo git.
 3. Por cada archivo:
-   - ¿Respeta estructura? (`features/` por dominio, `core/`, `stores/`, `config/`, `ui/`)
+   - ¿Respeta estructura? (`features/` por dominio, `core/`, `stores/`, `config/`, `ui/`, `app/`, `components/`, `lib/`, `types/`). Carpeta nueva en `src/` -> CHANGES_REQUESTED salvo spec.
    - ¿Convenciones repo?
      - Constantes física/gameplay en `config/physics.ts`, no inline.
      - Lógica por-frame en `useFrame` + `getState()`, sin re-renders por drag/frame.
@@ -23,8 +23,14 @@ Repo: `chapas-racing` (Next 15, React 19, @react-three/fiber 9, @react-three/rap
      - Sensores/física dentro de `<Physics>`.
    - Lógica pura nueva con test si framework existe. Componentes R3F: NO exigir tests de canvas — exige que informe liste pasos de verificación manual.
 4. Ejecuta: `pnpm tsc --noEmit` y `pnpm build`. Ambos verdes obligatorio.
-5. Recorre criterios de aceptación de la spec/feature. Marca `[x]` cumplidos, `[ ]` no.
-6. Emite veredicto.
+5. Checks objetivos sobre archivos tocados (resultado vacío esperado):
+   - `grep -n ": any\|as any"` -> cero `any`.
+   - `grep -n "console.log"` -> cero (`console.debug` gated permitido).
+   - `grep -n "TODO"` -> solo con contexto (qué falta y por qué).
+   - `git diff master -- package.json` -> sin deps nuevas salvo spec.
+6. Recorre criterios de aceptación de la spec/feature. Marca `[x]` cumplidos, `[ ]` no.
+7. Si la tarea cierra sesión: recorre "Checklist de estado final" de `docs/verification.md`.
+8. Emite veredicto.
 
 ## Formato del veredicto
 
