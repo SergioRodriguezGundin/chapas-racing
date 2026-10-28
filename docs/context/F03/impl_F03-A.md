@@ -11,8 +11,8 @@
 
 | Artefacto | Rol |
 |---|---|
-| `progress/research_f03_realtime_sync.md` | Único entregable del spike |
-| `progress/review_F03-A.md` | Reviewer → **APPROVED** |
+| `docs/context/research/research_f03_realtime_sync.md` | Único entregable del spike |
+| `docs/context/F03/review_F03-A.md` | Reviewer → **APPROVED** |
 | Este informe | Cierre de subtarea (docs/progreso) |
 
 ---
@@ -31,7 +31,7 @@
 
 | Archivo | Cambio |
 |---|---|
-| `progress/impl_F03-A.md` | Este informe |
+| `docs/context/F03/impl_F03-A.md` | Este informe |
 | `feature_list.json` | F03-A → `done`; `completed.f03_online`; description actualizada |
 | `progress/history.md` | Append F03-A |
 | `progress/current.md` | Plantilla / siguiente elegible F03-B |

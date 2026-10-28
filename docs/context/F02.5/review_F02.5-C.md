@@ -3,7 +3,7 @@
 **Veredicto:** APPROVED
 
 **Revisor:** 2026-07-17  
-**Base:** `progress/impl_F02.5-C.md` + diff real (`SetupScreen.tsx`, `src/lib/nearestPlayerColor.ts`)  
+**Base:** `docs/context/F02.5/impl_F02.5-C.md` + diff real (`SetupScreen.tsx`, `src/lib/nearestPlayerColor.ts`)  
 **Prerrequisitos:** `review_F02.5-A.md` / `review_F02.5-B.md` APPROVED — sin regresión en `appStage` / gating / AuthEntryScreen  
 **Acceptance:** `feature_list.json` → `F02.5-C`  
 **Verificación propia:** `pnpm tsc --noEmit && pnpm build` ✅ (exit 0)

@@ -34,7 +34,7 @@
 
 ## Verificación manual (informe implementer)
 
-Pasos documentados en `progress/impl_f01_b.md` L35–42. No bloquean aprobación (componente DOM; sin framework vitest en repo).
+Pasos documentados en `docs/context/F01/impl_F01-B.md` L35–42. No bloquean aprobación (componente DOM; sin framework vitest en repo).
 
 ## Cambios requeridos
 

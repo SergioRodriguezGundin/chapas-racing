@@ -14,7 +14,7 @@
 - Lógica por-frame en `useFrame` + `getState()` sin suscripciones por frame (`Cap.tsx` líneas 44–80).
 - Constantes física en `config/physics.ts`; sin deps nuevas.
 - Cero `any`; `userData` tipado con `playerIndex`.
-- Verificación manual documentada en `progress/impl_bug_03.md` (pasos 1–6); sin framework de tests en repo.
+- Verificación manual documentada en `docs/context/F01/impl_bug_03.md` (pasos 1–6); sin framework de tests en repo.
 
 ## Notas (no bloqueantes)
 - `teleport()` usa `y + 0.2` inline (`Cap.tsx` línea 19) — convención preexistente; fuera del alcance de BUG-03.

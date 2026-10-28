@@ -16,7 +16,7 @@
 ## Cambios previos — cierre
 1. ~~Alinear slot DB vs playerIndex~~ → opción (a) índice denso vía `roster.findIndex` al start. [x]
 2. ~~Roster canónico siempre refetch~~ → `fetchLobbyMembers` incondicional en `beginOnlineMatch`. [x]
-3. Manual 3→leave→start→turnos: listado en `progress/impl_F03-D.md` §3; no bloquea (R3F/multi-cliente — evidencia humana pendiente, no exigida para APPROVED).
+3. Manual 3→leave→start→turnos: listado en `docs/context/F03/impl_F03-D.md` §3; no bloquea (R3F/multi-cliente — evidencia humana pendiente, no exigida para APPROVED).
 
 ## Scope / extras verificados
 - `feature_list.json` F03-D = `in_progress` (no `done`). [x]

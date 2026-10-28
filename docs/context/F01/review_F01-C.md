@@ -60,14 +60,14 @@
 - [x] Cero `any` en archivos F01-C.
 - [x] Imports `@/`, `"use client"`, exports nombrados, JSDoc en exports principales.
 - [x] Cero dependencias nuevas.
-- [x] Pasos de verificación manual documentados en `progress/impl_f01_c.md` L32–40 (Nivel 3; no bloqueante — sin vitest en repo).
+- [x] Pasos de verificación manual documentados en `docs/context/F01/impl_F01-C.md` L32–40 (Nivel 3; no bloqueante — sin vitest en repo).
 
 ## Issues encontrados
 
 | Severidad | Archivo | Descripción |
 |-----------|---------|-------------|
 | minor | `VictoryModal.tsx` L17–25 | `computeRankingOrder` es lógica pura sin test; vitest ausente en `package.json` — aceptable según precedente F01-A. |
-| minor | `progress/impl_f01_c.md` | Checklist manual pendiente de ejecución humana en navegador. |
+| minor | `docs/context/F01/impl_F01-C.md` | Checklist manual pendiente de ejecución humana en navegador. |
 
 Ningún issue blocker o major.
 

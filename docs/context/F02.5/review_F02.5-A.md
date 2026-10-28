@@ -3,7 +3,7 @@
 **Veredicto:** APPROVED
 
 **Revisor:** 2026-07-17  
-**Base:** `progress/impl_F02.5-A.md` + diff real (`gameStore.ts`, `page.tsx`, `SetupScreen.tsx`)  
+**Base:** `docs/context/F02.5/impl_F02.5-A.md` + diff real (`gameStore.ts`, `page.tsx`, `SetupScreen.tsx`)  
 **Verificación propia:** `pnpm tsc --noEmit` ✅ · `pnpm build` ✅ (exit 0)
 
 ---

@@ -33,13 +33,15 @@ Instrucción tipo para subagente:
 
 > "Investiga cómo `@react-three/rapier` expone `onIntersectionExit` cuando el
 > rigid body se teleporta con `setTranslation`. Escribe hallazgos en
-> `progress/research_teleport_sensors.md`. Tu respuesta debe ser solo:
-> `done -> progress/research_teleport_sensors.md` o mensaje de bloqueo."
+> `docs/context/research/research_teleport_sensors.md`. Tu respuesta debe ser solo:
+> `done -> docs/context/research/research_teleport_sensors.md` o mensaje de bloqueo."
 
 Convención de archivos:
-- `progress/research_<tema>.md` (explorer)
-- `progress/impl_<feature>.md` (implementer)
-- `progress/review_<feature>.md` (reviewer)
+- `docs/context/research/research_<tema>.md` (explorer)
+- `docs/context/<feature>/impl_<tarea>.md` (implementer)
+- `docs/context/<feature>/review_<tarea>.md` (reviewer)
+
+`<feature>` = ID de `feature_list.md` (`F07`, `F03.5`…); `<tarea>` = ID de tarea (`F07-A`). Ej: `docs/context/F07/impl_F07-A.md`. Al lanzar implementer/reviewer, pásales la ruta completa.
 
 Resultado de subagente sin referencia a archivo → rechazado, relanza.
 

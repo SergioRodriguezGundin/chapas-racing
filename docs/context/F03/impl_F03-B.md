@@ -10,7 +10,7 @@
 | `supabase/migrations/20260718230000_rooms.sql` | **Nuevo** — enum `room_status`, tablas `rooms` / `room_members`, triggers capacidad + `updated_at`, RPCs `create_room` / `join_room`, RLS, publication Realtime, policies `realtime.messages` (si existe) |
 | `src/types/supabase.ts` | **Regenerado** vía MCP `generate_typescript_types` tras aplicar migración remota |
 | `progress/current.md` | Plan F03-B |
-| `progress/impl_F03-B.md` | Este informe |
+| `docs/context/F03/impl_F03-B.md` | Este informe |
 
 ## Decisiones
 
@@ -81,7 +81,7 @@ Para canales privados `room:{id}` en F03-C: desactivar “Allow public access”
 ## Fix post-review (CA3 — CHANGES_REQUESTED)
 
 > Fecha: 2026-07-18  
-> Veredicto previo: `progress/review_F03-B.md` — policy UPDATE permitía mutar `room_id` / `slot_index` / `strokes`.
+> Veredicto previo: `docs/context/F03/review_F03-B.md` — policy UPDATE permitía mutar `room_id` / `slot_index` / `strokes`.
 
 ### Elección: Opción A (column grants)
 
@@ -122,7 +122,7 @@ pnpm build         # OK
 ## Cierre (post-APPROVED)
 
 > Fecha: 2026-07-18  
-> Review: `progress/review_F03-B.md` — **APPROVED**.
+> Review: `docs/context/F03/review_F03-B.md` — **APPROVED**.
 
 - `feature_list.json`: F03-B `"status": "done"`; `completed.f03_online` = `["F03-A", "F03-B"]`; description actualizada.
 - Bitácora: append en `progress/history.md`.

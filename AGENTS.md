@@ -20,7 +20,8 @@
 | `specs/*.md` | Spec detallada de iteración en curso | Si tu tarea la referencia |
 | `progress/current.md` | Estado de sesión actual | Siempre, al empezar |
 | `progress/history.md` | Bitácora append-only | Si necesitas contexto histórico |
-| `progress/impl_*.md`, `review_*.md`, `research_*.md` | Informes de subagentes | Si continúas trabajo previo |
+| `docs/context/<feature>/impl_<tarea>.md`, `review_<tarea>.md` | Informes de implementer/reviewer, una carpeta por feature (`F01/`, `F03.5/`…; tareas sin feature: `iteration-2/`, `infra/`) | Si continúas trabajo previo |
+| `docs/context/research/research_*.md` | Informes de explorer | Si continúas trabajo previo |
 | `docs/architecture.md` | Qué significa "buen trabajo": capas, principios, anti-patrones | Antes de implementar |
 | `docs/conventions.md` | Estilo, nombres, patrones repo | Antes de escribir código |
 | `docs/verification.md` | Niveles de evidencia para declarar `done` + checklist de estado final | Antes de cerrar tarea / sesión |

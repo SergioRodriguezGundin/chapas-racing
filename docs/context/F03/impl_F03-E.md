@@ -17,7 +17,7 @@
 | `src/ui/OnlineLobby.tsx` | Reconnect, heartbeat, skip timeout, finish sync; unmount ≠ leave_room; post-review: pick activa + leave finished |
 | `src/types/supabase.ts` | Types rooms + Functions F03-E |
 | `progress/current.md` | Plan F03-E |
-| `progress/impl_F03-E.md` | Este informe |
+| `docs/context/F03/impl_F03-E.md` | Este informe |
 
 ## Decisiones
 
@@ -104,7 +104,7 @@ pnpm build         # OK
 ## Cierre (post-APPROVED)
 
 > Fecha: 2026-07-19  
-> Review: `progress/review_F03-E.md` — **APPROVED**.
+> Review: `docs/context/F03/review_F03-E.md` — **APPROVED**.
 
 - `feature_list.json`: F03-E `"status": "done"`; `completed.f03_online` = `["F03-A","F03-B","F03-C","F03-D","F03-E"]`; description → F03 online completo; siguiente elegible F07.
 - Checkboxes § F03 en `specs/feature_list.md` (L69–76): todos `[x]`.

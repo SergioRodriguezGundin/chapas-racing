@@ -7,4 +7,4 @@
 ## Notas
 
 - No hay tarea en curso.
-- Artefactos F03.5-C: `progress/impl_F03.5-C.md`, `progress/review_F03.5-C.md`.
+- Artefactos F03.5-C: `docs/context/F03.5/impl_F03.5-C.md`, `docs/context/F03.5/review_F03.5-C.md`.

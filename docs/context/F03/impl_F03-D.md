@@ -6,7 +6,7 @@
 
 ## Cierre
 
-- Review: `progress/review_F03-D.md` — **APPROVED** (re-review 2026-07-19).
+- Review: `docs/context/F03/review_F03-D.md` — **APPROVED** (re-review 2026-07-19).
 - `feature_list.json`: F03-D `"status": "done"`; `completed.f03_online` incluye F03-D.
 - Checkboxes F03 en `specs/feature_list.md` **no** marcados (pendiente F03-E).
 - Siguiente elegible: F03-E (`progress/current.md`).
@@ -28,7 +28,7 @@
 | `src/ui/VictoryModal.tsx` | Online: solo «Salir al lobby» (newMatch) |
 | `src/app/(protected)/online/page.tsx` | Monta `OnlineLobby` (layout interno) |
 | `progress/current.md` | Plan F03-D |
-| `progress/impl_F03-D.md` | Este informe |
+| `docs/context/F03/impl_F03-D.md` | Este informe |
 
 ## Decisiones
 
@@ -69,7 +69,7 @@ pnpm build         # OK
 ## Fix post-review (CHANGES_REQUESTED)
 
 > Fecha: 2026-07-19  
-> Responde a `progress/review_F03-D.md` cambios #1 y #2.
+> Responde a `docs/context/F03/review_F03-D.md` cambios #1 y #2.
 
 ### Archivos tocados (fix)
 

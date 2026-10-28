@@ -38,7 +38,7 @@
 - [x] Cero `any` en archivos tocados
 - [x] Imports con alias `@/`
 - [x] Sensores/colliders dentro de `<Physics>` (`GameCanvas.tsx`)
-- [x] Pasos de verificación manual documentados en `progress/impl_f01_a.md` (Nivel 3; ejecución humana pendiente, no bloqueante para código)
+- [x] Pasos de verificación manual documentados en `docs/context/F01/impl_F01-A.md` (Nivel 3; ejecución humana pendiente, no bloqueante para código)
 
 ## Issues encontrados
 
@@ -48,7 +48,7 @@
 | minor | `Cap.tsx:40` | Fallback `"#e63946"` duplica `PLAYER_COLORS[0]` |
 | minor | `FinishLine.tsx:10` | `FINISH_COLOR` hardcodeado (preexistente) |
 | minor | `FinishLine.tsx:22-25` | `userData` sin union tipada ni type guard (funciona en runtime; mejora futura de tipado estricto) |
-| minor | `progress/impl_f01_a.md` | Checklist manual marcado pendiente — reviewer no ejecutó navegador en esta sesión |
+| minor | `docs/context/F01/impl_F01-A.md` | Checklist manual marcado pendiente — reviewer no ejecutó navegador en esta sesión |
 
 Ningún issue blocker o major.
 

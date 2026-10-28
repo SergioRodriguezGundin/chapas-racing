@@ -3,7 +3,7 @@
 **Veredicto:** APPROVED
 
 **Revisor:** 2026-07-17  
-**Base:** `progress/impl_F02.5-B.md` + diff real (`AuthEntryScreen.tsx`, `LoginForm.tsx`, `page.tsx`)  
+**Base:** `docs/context/F02.5/impl_F02.5-B.md` + diff real (`AuthEntryScreen.tsx`, `LoginForm.tsx`, `page.tsx`)  
 **Prerrequisito A:** `review_F02.5-A.md` APPROVED — sin regresión en `appStage` / gating (`page.tsx` L32–35, `enterSetup` intacto)  
 **Verificación propia:** `pnpm tsc --noEmit` ✅ · `pnpm build` ✅ (exit 0)
 

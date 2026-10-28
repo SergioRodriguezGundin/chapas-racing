@@ -2,14 +2,14 @@
 
 **Veredicto:** APPROVED
 
-**Artefacto revisado:** `progress/research_f03_realtime_sync.md` (único entregable del spike)  
+**Artefacto revisado:** `docs/context/research/research_f03_realtime_sync.md` (único entregable del spike)  
 **Fecha review:** 2026-07-18
 
 ---
 
 ## Criterios de aceptación
 
-- AC1 Documento `progress/research_f03_realtime_sync.md` con decisión transporte (Realtime vs WS) + justificación: [x]
+- AC1 Documento `docs/context/research/research_f03_realtime_sync.md` con decisión transporte (Realtime vs WS) + justificación: [x]
   - Decisión: Supabase Realtime (Broadcast + Presence + `postgres_changes`). Justificación vs WS dedicado en §1; criterios de cuándo reabrir WS → `blocked`.
 - AC2 Estrategia sync documentada (input + settle snapshot u alternativa con trade-offs): [x]
   - Modelo elegido §2: replicar `{direction, power}` + snapshot al `settle()`. Tabla de alternativas A–E con trade-offs.

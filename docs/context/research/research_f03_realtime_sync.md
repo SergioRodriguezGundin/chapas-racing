@@ -51,7 +51,7 @@ Hasta entonces: **Realtime**.
 
 ### Auth en canales
 
-- Partidas online bajo `(protected)/online` (ya stub); sesión vía cookies/`@supabase/ssr` (ver `progress/research_supabase_auth.md`).
+- Partidas online bajo `(protected)/online` (ya stub); sesión vía cookies/`@supabase/ssr` (ver `docs/context/research/research_supabase_auth.md`).
 - Canales de partida: `config: { private: true }` + `supabase.realtime.setAuth()` antes de `subscribe`.
 - RLS en `realtime.messages` filtrando por membresía de sala (`realtime.topic()` ↔ `room_id` / topic). Docs: [Realtime Authorization](https://supabase.com/docs/guides/realtime/authorization).
 - Desactivar “Allow public access” en Realtime Settings del proyecto cuando se activen canales privados.
@@ -286,7 +286,7 @@ PoC en `src/`: **no realizado** (decisión desbloqueada con docs + lectura de c�
 - [Realtime Presence](https://supabase.com/docs/guides/realtime/presence) — `track` / sync / leave.
 - [Realtime Settings](https://supabase.com/docs/guides/realtime/settings) — límites (payload KB, clients, events/s), public vs private.
 - [Broadcast](https://supabase.com/docs/guides/realtime/broadcast) — mensajería efímera entre clientes.
-- Research Auth previa: `progress/research_supabase_auth.md`.
+- Research Auth previa: `docs/context/research/research_supabase_auth.md`.
 
 ### Código del repo
 

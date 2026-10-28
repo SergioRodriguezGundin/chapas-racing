@@ -46,4 +46,4 @@ Scope implementer:
 ## Referencias
 
 - [Login with Google — Supabase](https://supabase.com/docs/guides/auth/social-login/auth-google)
-- `progress/impl_F02-B.md` § Configuración Supabase Dashboard
+- `docs/context/F02/impl_F02-B.md` § Configuración Supabase Dashboard

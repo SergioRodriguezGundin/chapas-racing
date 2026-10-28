@@ -9,14 +9,14 @@
 - circuit-01: 8 waypoints -> 7 segments, 8 pads.
 - Test vitest pendiente (vitest no instalado; no se añaden deps sin discusión). Verificación por inspección documentada.
 - Verificación: `pnpm tsc --noEmit` limpio; `pnpm build` limpio.
-- Artefactos: `progress/impl_track_geometry.md`, `progress/review_track_geometry.md` (APPROVED).
+- Artefactos: `docs/context/iteration-2/impl_track_geometry.md`, `docs/context/iteration-2/review_track_geometry.md` (APPROVED).
 
 ### Feature 3 — store_status_restart (done)
 - Modo harness (leader → implementer → reviewer).
 - `src/stores/gameStore.ts`: `GameStatus` ('playing'|'won'), `status` inicial 'playing', `resetRequestId` (0), `win()`, `restart()` (estado inicial completo + incremento resetRequestId vía set funcional), guard de `startAiming` si status !== 'playing', `lastPosition` inicial desde `getCurrentTrack().capStart`. Retirado import muerto de `CAP_START_POSITION` (la constante sigue en config; su borrado es feature 4).
 - Semántica de phase intacta.
 - Verificación: `pnpm tsc --noEmit` limpio; `pnpm build` limpio.
-- Artefactos: `progress/impl_store_status_restart.md`, `progress/review_store_status_restart.md` (APPROVED).
+- Artefactos: `docs/context/iteration-2/impl_store_status_restart.md`, `docs/context/iteration-2/review_store_status_restart.md` (APPROVED).
 
 ### Feature 4 — track_renderer (done)
 - Modo harness (leader → implementer → reviewer).
@@ -24,28 +24,28 @@
 - `GameCanvas.tsx`: `<Ground />` → `<TrackRenderer />` dentro de `<Physics>`.
 - `Ground.tsx` eliminado (git: D). `Cap.tsx` toma position de `getCurrentTrack().capStart`. `CAP_START_POSITION` eliminada de config (0 referencias vivas; grosor de suelo en `config/physics.ts`).
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación visual en pantalla queda pendiente-de-humano (leader no la ejecuta).
-- Artefactos: `progress/impl_track_renderer.md`, `progress/review_track_renderer.md` (APPROVED).
+- Artefactos: `docs/context/iteration-2/impl_track_renderer.md`, `docs/context/iteration-2/review_track_renderer.md` (APPROVED).
 
 ### Feature 5 — finish_line (done)
 - Modo harness (leader → explorer → implementer → reviewer).
-- Explorer: fijada API de sensores @react-three/rapier 2.2.0 (`sensor` en CuboidCollider, `onIntersectionEnter(payload)`, usar `payload.other.*` no deprecados; sensor y chapa bajo el mismo `<Physics>`; gotcha de re-disparo tras teleport). -> `progress/research_rapier_sensors.md`.
+- Explorer: fijada API de sensores @react-three/rapier 2.2.0 (`sensor` en CuboidCollider, `onIntersectionEnter(payload)`, usar `payload.other.*` no deprecados; sensor y chapa bajo el mismo `<Physics>`; gotcha de re-disparo tras teleport). -> `docs/context/research/research_rapier_sensors.md`.
 - Nuevo `src/features/track/FinishLine.tsx`: `RigidBody fixed colliders={false}` + `CuboidCollider sensor` en `finishTransform` (half-extents `[finish.width/2, alto/2, prof/2]`), visual semitransparente. `onIntersectionEnter` -> guard `status==='playing'` (getState) + `win()`; guard extra por `userData.type==='cap'` (añadido `userData` a Cap.tsx). Montado en GameCanvas dentro de `<Physics>`. Constantes en `config/physics.ts`.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación visual/física (cruzar meta -> won; no re-dispara) pendiente-de-humano.
-- Artefactos: `progress/impl_finish_line.md`, `progress/review_finish_line.md` (APPROVED).
+- Artefactos: `docs/context/iteration-2/impl_finish_line.md`, `docs/context/iteration-2/review_finish_line.md` (APPROVED).
 
 ### Feature 6 — cap_reset_teleport (done)
 - Modo harness (leader → implementer → reviewer).
 - `config/physics.ts`: `OUT_OF_TRACK_Y = -3`.
 - `Cap.tsx`: helper `teleport(body, [x,y,z])` compartido (setTranslation y+0.2, linvel/angvel 0, rotación identidad). Camino fuera-de-pista en useFrame FUERA del guard de phase -> teleport a `lastPosition` + `settle()`. Camino restart: comparación de `resetRequestId` con ref `lastResetId` (inicializado con valor del store, sin teleport espurio, sin refs cruzadas DOM<->Canvas) -> teleport a `getCurrentTrack().capStart`. Detección de parada por velocidad intacta para 'moving'.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Verificación física real pendiente-de-humano.
-- Artefactos: `progress/impl_cap_reset_teleport.md`, `progress/review_cap_reset_teleport.md` (APPROVED).
+- Artefactos: `docs/context/iteration-2/impl_cap_reset_teleport.md`, `docs/context/iteration-2/review_cap_reset_teleport.md` (APPROVED).
 
 ### Feature 7 — victory_modal (done)
 - Modo harness (leader → implementer → reviewer).
 - Nuevo `src/ui/VictoryModal.tsx`: overlay DOM cliente que suscribe `status` (return null salvo `status==='won'`), mensaje de victoria + botón "Jugar de nuevo" que llama a `store.restart()` (delega; no duplica teleport/estado). Clases `.victory-*` en `globals.css` con `pointer-events:auto`. Montado junto al `<Hud />` en `page.tsx`.
 - Con modal abierto no se puede lanzar (guard de startAiming por status, feature 3). Reset via restart repone estado (feature 3) y teleporta (feature 6).
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Interacción visual pendiente-de-humano.
-- Artefactos: `progress/impl_victory_modal.md`, `progress/review_victory_modal.md` (APPROVED).
+- Artefactos: `docs/context/iteration-2/impl_victory_modal.md`, `docs/context/iteration-2/review_victory_modal.md` (APPROVED).
 
 ## Infra — shadcn/ui preset (feature/spec-3)
 
@@ -69,7 +69,7 @@
 - `VictoryModal.tsx`: tokens preset (`bg-popover`, `text-primary`, `border-border`, Button default).
 - Nuevo `src/components/ui/badge.tsx` (shadcn add, sin deps npm nuevas).
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Visual pendiente-de-humano.
-- Artefactos: `progress/impl_shadcn_css_cleanup.md`, `progress/review_shadcn_css_cleanup.md` (APPROVED).
+- Artefactos: `docs/context/infra/impl_shadcn_css_cleanup.md`, `docs/context/infra/review_shadcn_css_cleanup.md` (APPROVED).
 
 ## F02 — Auth / Perfil Supabase (done)
 
@@ -80,7 +80,7 @@
 - **F02-E** Protección rutas: `/online`, `/editor`, `/profile` protegidas; hot-seat `/` público.
 - **F02-D** Editor perfil: display_name, cap_color, avatar upload, logout, link en HUD.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios en cada sub-tarea.
-- Artefactos: `progress/impl_F02-*.md`, `progress/review_F02-*.md` (todos APPROVED).
+- Artefactos: `docs/context/F02/impl_F02-*.md`, `docs/context/F02/review_F02-*.md` (todos APPROVED).
 - Manual pendiente: Google OAuth en Dashboard, signup + RLS cross-user en local.
 
 ## F02.5 — Flujo de entrada auth-first (done)
@@ -91,23 +91,23 @@
 - **F02.5-C** Prefill Jugador 1 desde `profiles` + `nearestPlayerColor` + logout → auth.
 - Criterios F02.5 marcados en `specs/feature_list.md`. Completado en `feature_list.json`.
 - Verificación: `tsc` + `build` verdes en cada subtarea (reviewers).
-- Artefactos: `progress/impl_F02.5-*.md`, `progress/review_F02.5-*.md` (todos APPROVED).
+- Artefactos: `docs/context/F02.5/impl_F02.5-*.md`, `docs/context/F02.5/review_F02.5-*.md` (todos APPROVED).
 - Manual pendiente: flujo completo en browser (skip, login, prefill, logout, sesión persistida).
 
 ## F03 — Sesiones online multijugador (done)
 
 ### F03-A — Spike transporte Realtime + sync (done)
 - Modo harness (leader → explorer → reviewer → implementer cierre docs).
-- Entregable: `progress/research_f03_realtime_sync.md` — decisión **Supabase Realtime** (Broadcast + Presence + postgres_changes); sync **input + settle snapshot**; contrato tentativo create/join/start/launch/settle/disconnect/end.
+- Entregable: `docs/context/research/research_f03_realtime_sync.md` — decisión **Supabase Realtime** (Broadcast + Presence + postgres_changes); sync **input + settle snapshot**; contrato tentativo create/join/start/launch/settle/disconnect/end.
 - **No blocked** por deps; cero cambios en `src/` / `package.json`. PoC no realizado.
-- Review: `progress/review_F03-A.md` (APPROVED). Cierre: `progress/impl_F03-A.md`.
+- Review: `docs/context/F03/review_F03-A.md` (APPROVED). Cierre: `docs/context/F03/impl_F03-A.md`.
 - F03-B..E siguen pending; checkboxes F03 en `specs/feature_list.md` no marcados (feature completa abierta).
 
 ### F03-B — Schema salas/partida + RLS + códigos (done)
 - Modo harness (leader → implementer → reviewer → fix CA3 → re-review → implementer cierre docs).
 - Migraciones: `supabase/migrations/20260718230000_rooms.sql` (rooms / room_members, RPCs `create_room`/`join_room`, RLS, Realtime) + correctiva `20260718231000_room_members_update_presence_only.sql` (UPDATE presence-only en members).
 - Tipos: `src/types/supabase.ts` regenerados. Sin UI lobby ni sync launch.
-- Review: `progress/review_F03-B.md` (APPROVED). Cierre: `progress/impl_F03-B.md`.
+- Review: `docs/context/F03/review_F03-B.md` (APPROVED). Cierre: `docs/context/F03/impl_F03-B.md`.
 - F03-C..E siguen pending; checkboxes F03 en `specs/feature_list.md` no marcados (feature completa abierta).
 
 ### F03-C — Lobby create/join + presencia realtime (done)
@@ -115,7 +115,7 @@
 - UI `/online`: `OnlineLobby` (crear/unirse por código, roster + Presence); config `src/config/online.ts`; stub reemplazado.
 - Post-review: RPC `leave_room` (`20260718232000_leave_room.sql`) — DELETE membership, host transfer / sala vacía; cableado botón + unmount.
 - Sin start match (botón Iniciar disabled → F03-D). Hot-seat `/` intacto. Cero deps nuevas.
-- Review: `progress/review_F03-C.md` (APPROVED). Cierre: `progress/impl_F03-C.md`.
+- Review: `docs/context/F03/review_F03-C.md` (APPROVED). Cierre: `docs/context/F03/impl_F03-C.md`.
 - F03-D..E siguen pending; checkboxes F03 en `specs/feature_list.md` no marcados (feature completa abierta).
 
 ### F03-D — Inicio de partida + turnos + sync de lanzamientos (done)
@@ -123,13 +123,13 @@
 - Start durable: RPC `start_room` + `postgres_changes` → `beginOnlineMatch`; Broadcast launch/settle + `turn_seq`; gate aim por `session.slotIndex`.
 - Post-review: roster canónico vía `fetchLobbyMembers` incondicional; `playerIndex` denso (`findIndex`) alinea Cap/Hud/rotación aunque DB tenga gaps tras leave.
 - Hot-seat `/` intacto (`matchMode` default `"local"`). Cero deps nuevas. Constantes en `config/online.ts`.
-- Review: `progress/review_F03-D.md` (APPROVED). Cierre: `progress/impl_F03-D.md`.
+- Review: `docs/context/F03/review_F03-D.md` (APPROVED). Cierre: `docs/context/F03/impl_F03-D.md`.
 
 ### F03-E — Desconexión/reconexión + fin + validación server (done)
 - Modo harness (leader → implementer → reviewer → fix reconnect CA2 → re-review → implementer cierre docs).
 - RPCs `submit_room_launch` / `skip_room_turn` / `finish_room`; timeout disconnect + heartbeat en `config/online.ts`; ranking sync vía `finish_room` + VictoryModal.
 - Post-review: `findActiveMembershipForReconnect` (array + pick lobby|playing; leave finished huérfanos) — nunca `maybeSingle` sobre 0..N memberships.
-- Hot-seat `/` intacto. Cero deps nuevas. Review: `progress/review_F03-E.md` (APPROVED). Cierre: `progress/impl_F03-E.md`.
+- Hot-seat `/` intacto. Cero deps nuevas. Review: `docs/context/F03/review_F03-E.md` (APPROVED). Cierre: `docs/context/F03/impl_F03-E.md`.
 
 ### Feature F03 completa (done)
 - Subtareas A–E cerradas. Checkboxes § F03 en `specs/feature_list.md` marcados `[x]`.
@@ -144,7 +144,7 @@
 - `AppStage` += `"mode"`; flujo `auth → mode → setup|… → match`. Actions `enterMode`, `chooseLocal` → setup, `chooseOnline` stub (F03.5-C).
 - `AuthEntryScreen` → `enterMode`; `ModeSelectScreen` + montaje en `page.tsx`; `newMatch` → `"mode"`; logout desde mode → auth.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Cero deps nuevas.
-- Artefactos: `progress/impl_F03.5-A.md`, `progress/review_F03.5-A.md` (APPROVED).
+- Artefactos: `docs/context/F03.5/impl_F03.5-A.md`, `docs/context/F03.5/review_F03.5-A.md` (APPROVED).
 - `feature_list.json`: F03.5-A `status: done`. Siguiente elegible: **F03.5-B**.
 
 ### F03.5-B — Rama local: setup jugadores (done)
@@ -153,7 +153,7 @@
 - SetupScreen «Volver» → `enterMode` (mode); logout → `logoutToAuth` (auth).
 - `startMatch` sin `mode: "online"` → hot-seat local; física F01 intacta.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Cero deps nuevas.
-- Artefactos: `progress/impl_F03.5-B.md`, `progress/review_F03.5-B.md` (APPROVED).
+- Artefactos: `docs/context/F03.5/impl_F03.5-B.md`, `docs/context/F03.5/review_F03.5-B.md` (APPROVED).
 - `feature_list.json`: F03.5-B `status: done`. Siguiente elegible: **F03.5-C**.
 
 ### F03.5-C — Rama online: lobby en hub (done)
@@ -161,7 +161,7 @@
 - `AppStage` += `"online"`; `chooseOnline` → lobby en hub (`OnlineLobby embedded`); gate sesión en ModeSelect.
 - Leave / Volver / `newMatch` → mode; unmount `leave_room` si mode/auth; `/online` bridge → hub.
 - Verificación: `pnpm tsc --noEmit` y `pnpm build` limpios. Cero deps nuevas.
-- Artefactos: `progress/impl_F03.5-C.md`, `progress/review_F03.5-C.md` (APPROVED).
+- Artefactos: `docs/context/F03.5/impl_F03.5-C.md`, `docs/context/F03.5/review_F03.5-C.md` (APPROVED).
 - `feature_list.json`: F03.5-C `status: done`. Siguiente elegible: **F07 — Leaderboards**.
 
 ### Feature F03.5 completa (done)

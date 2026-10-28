@@ -12,7 +12,7 @@
 | `src/ui/SetupScreen.tsx` | Botón «Volver» → `enterMode` (mode, no auth). Logout intacto → `logoutToAuth`. Prefill one-shot sin cambios. |
 | `src/stores/gameStore.ts` | JSDoc `chooseLocal` actualizado (ya no dice “F03.5-B cableará…”). |
 | `progress/current.md` | Plan implementer F03.5-B. |
-| `progress/impl_F03.5-B.md` | Este informe. |
+| `docs/context/F03.5/impl_F03.5-B.md` | Este informe. |
 
 **No tocados (ya correctos desde F03.5-A / F02.5-C):**
 

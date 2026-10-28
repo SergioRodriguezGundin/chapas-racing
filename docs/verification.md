@@ -33,7 +33,7 @@ NO testear: componentes R3F, canvas, física rapier. Coste alto, valor bajo -> n
 
 ### Nivel 3 — Verificación manual en navegador (obligatorio para features de escena/física/UI)
 
-`pnpm dev` -> flujo end-to-end. Pasos EXACTOS escritos en `progress/impl_<tarea>.md`, formato reproducible:
+`pnpm dev` -> flujo end-to-end. Pasos EXACTOS escritos en `docs/context/<feature>/impl_<tarea>.md`, formato reproducible:
 
 ```markdown
 ## Verificación manual
@@ -68,7 +68,7 @@ Flujo iter 1 sigue vivo:
 pnpm tsc --noEmit && pnpm build
 ```
 
-Verde + informe `progress/impl_<tarea>.md` con niveles cubiertos -> listo para reviewer.
+Verde + informe `docs/context/<feature>/impl_<tarea>.md` con niveles cubiertos -> listo para reviewer.
 Rojo -> `progress/current.md` estado `blocked`. Nada se marca `done`.
 
 ### Checklist de estado final
@@ -78,7 +78,7 @@ Se evalúa destino, no camino. Juez (humano o IA) recorre cada punto; alguno vac
 - [ ] Niveles 1–4 aplicables cubiertos (arriba).
 - [ ] `progress/current.md` vacío (plantilla) o describe UNA sola tarea activa. Cero restos de sesiones anteriores.
 - [ ] Última tarea en estado correcto: `done` (checkboxes en `feature_list.md` + `review_*.md` APPROVED) o `blocked` documentado en `progress/current.md`.
-- [ ] Toda feature con checkboxes marcados en `feature_list.md` tiene `progress/impl_*.md` + `progress/review_*.md` APPROVED.
+- [ ] Toda feature con checkboxes marcados en `feature_list.md` tiene `docs/context/<feature>/impl_*.md` + `docs/context/<feature>/review_*.md` APPROVED.
 - [ ] Ningún `review_*.md` con CHANGES_REQUESTED sin impl posterior que lo resuelva.
 - [ ] `progress/history.md` con entrada de la sesión.
 - [ ] `git status` sin archivos sospechosos sin ignorar (`.next/`, `node_modules/`, `*.tsbuildinfo`, `*.tmp`).

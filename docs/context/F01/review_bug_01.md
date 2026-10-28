@@ -14,11 +14,11 @@
 - Constantes de lanzamiento en `config/physics.ts` (`LAUNCH`) — sin magia inline en `useLaunch.ts`.
 - Sin dependencias nuevas.
 - Lógica por-frame en `Cap.tsx` usa `getState()` dentro de `useFrame`; selectores subscribe solo para datos de render (`color`, `isActive`).
-- Alcance del fix acotado a `useLaunch.ts` + cableado necesario en `Cap.tsx` (`playerIndex`). Coherente con la causa raíz documentada en `progress/impl_bug_01.md`.
+- Alcance del fix acotado a `useLaunch.ts` + cableado necesario en `Cap.tsx` (`playerIndex`). Coherente con la causa raíz documentada en `docs/context/F01/impl_bug_01.md`.
 
 ## Verificación manual
 
-Pasos listados en `progress/impl_bug_01.md` (§ Verificación manual). No ejecutables por revisor automatizado; la corrección de código es suficiente para aprobar estructuralmente; validación humana pendiente en runtime.
+Pasos listados en `docs/context/F01/impl_bug_01.md` (§ Verificación manual). No ejecutables por revisor automatizado; la corrección de código es suficiente para aprobar estructuralmente; validación humana pendiente en runtime.
 
 ## BUG-02 (impulso chapa incorrecta)
 
@@ -26,4 +26,4 @@ Pasos listados en `progress/impl_bug_01.md` (§ Verificación manual). No ejecut
 
 ## Observación menor (no bloqueante)
 
-`progress/impl_bug_01.md` indica «Cap.tsx sin cambios», pero el diff incluye el paso de `playerIndex` a `useLaunch` — cambio requerido para el guard, no scope creep.
+`docs/context/F01/impl_bug_01.md` indica «Cap.tsx sin cambios», pero el diff incluye el paso de `playerIndex` a `useLaunch` — cambio requerido para el guard, no scope creep.

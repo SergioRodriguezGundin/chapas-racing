@@ -14,7 +14,7 @@
 | `supabase/migrations/20260718232000_leave_room.sql` | **Nuevo (post-review)** — RPC `leave_room` |
 | `src/types/supabase.ts` | `leave_room` en Functions |
 | `progress/current.md` | Plan F03-C |
-| `progress/impl_F03-C.md` | Este informe |
+| `docs/context/F03/impl_F03-C.md` | Este informe |
 
 ## Decisiones
 
@@ -124,7 +124,7 @@ pnpm build         # OK (sin warnings useEffectEvent)
 ## Cierre (post-APPROVED)
 
 > Fecha: 2026-07-18  
-> Review: `progress/review_F03-C.md` — **APPROVED**.
+> Review: `docs/context/F03/review_F03-C.md` — **APPROVED**.
 
 - `feature_list.json`: F03-C `"status": "done"`; `completed.f03_online` = `["F03-A", "F03-B", "F03-C"]`; description actualizada.
 - Bitácora: append en `progress/history.md`.

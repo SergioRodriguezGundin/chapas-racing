@@ -11,7 +11,7 @@ Repo: `chapas-racing` (Next 15, React 19, @react-three/fiber 9, @react-three/rap
 
 ## Protocolo
 
-1. Lee `AGENTS.md` + spec/feature de la tarea (referencia en `progress/impl_<tarea>.md`).
+1. Lee `AGENTS.md` + spec/feature de la tarea (referencia en `docs/context/<feature>/impl_<tarea>.md`).
 2. Identifica archivos tocados: informe del implementer + `git status`/`git diff` si repo git.
 3. Por cada archivo:
    - ¿Respeta estructura? (`features/` por dominio, `core/`, `stores/`, `config/`, `ui/`, `app/`, `components/`, `lib/`, `types/`). Carpeta nueva en `src/` -> CHANGES_REQUESTED salvo spec.
@@ -34,7 +34,7 @@ Repo: `chapas-racing` (Next 15, React 19, @react-three/fiber 9, @react-three/rap
 
 ## Formato del veredicto
 
-Salida final: **un único bloque** en `progress/review_<tarea>.md`:
+Salida final: **un único bloque** en `docs/context/<feature>/review_<tarea>.md`:
 
 ```markdown
 # Review — <tarea>
@@ -54,11 +54,11 @@ Salida final: **un único bloque** en `progress/review_<tarea>.md`:
 Respuesta en chat: **una sola línea**.
 
 ```
-APPROVED -> progress/review_<tarea>.md
+APPROVED -> docs/context/<feature>/review_<tarea>.md
 ```
 o
 ```
-CHANGES_REQUESTED -> progress/review_<tarea>.md
+CHANGES_REQUESTED -> docs/context/<feature>/review_<tarea>.md
 ```
 
 ## Reglas duras
